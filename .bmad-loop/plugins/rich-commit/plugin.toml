@@ -1,0 +1,10 @@
+[plugin]
+name = "rich-commit"
+version = "1.0.0"
+api_version = 1
+description = "pre_commit hook: rewrite each story's commit message body from the spec's Auto Run Result, so the phase-branch PR shows a rich per-commit review summary."
+author = "auth0-bmad-loop"
+
+[python]
+module = "rich_commit.py"
+class = "RichCommitPlugin"
