@@ -11,7 +11,7 @@ Pain ranking (owner-stated): 1) raw spend and quota burn, 2) re-explaining acros
 Hub-and-spoke. Each product has a BMAD planning hub (markdown artifacts, stories, knowledge) that symlinks to one or more code spoke repos. Dev runs use worktrees on spokes. Rules that follow:
 
 - Searches never follow symlinks; all search, delegation, and indexing names real spoke paths.
-- Indexes are planning-time aids over the hub and main checkouts; dev sessions inside worktrees use direct tools.
+- Indexes serve every session, including dev sessions in worktrees: qmd answers from the hub's docs regardless of where the session runs, and codegraph (indexed at the main checkout) correctly answers structural questions about unchanged code. Caveat: indexes never reflect a branch's in-flight edits, so use direct tools for files the story is actively changing. Per-worktree codegraph init only for long-lived worktrees with a large delta; short-lived bmad-loop story worktrees don't justify the indexing cost.
 - The hub owns planning truth and cross-repo knowledge; spokes own code truth.
 
 ## 3. Tool verdicts
