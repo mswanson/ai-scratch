@@ -1,5 +1,7 @@
 # bmad-loop version pins
 
+- The v0.9.0 bundled hook (`.bmad-loop/bmad_loop_hook.py`) includes antigravity/agy payload handling — it is part of the tool, not local drift. Do not revert it; `bmad-loop init` reinstates it. Antigravity stays unsupported via registered CLIs (claude + codex) and policy routing.
+
 Updated 2026-07-31 (Upgrade action, auth0-bmad-loop skill).
 
 - `bmad-loop` tool: pinned to tag `v0.9.0` (`git+https://github.com/bmad-code-org/bmad-loop.git@v0.9.0`). Verified the tag contains the known-good fix commit `eb780d5` (`compare eb780d5...v0.9.0` → ahead, behind_by 0). Previous install: same 0.9.0 code but from an unpinned git source.
