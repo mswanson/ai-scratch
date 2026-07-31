@@ -18,7 +18,7 @@ Hub-and-spoke. Each product has a BMAD planning hub (markdown artifacts, stories
 
 | Tool | Verdict | Reason |
 |---|---|---|
-| rtk (installed) | Keep; tune | 74.6% savings on command output. Tune: exclude grep/rg (conflicts with qmd/codegraph routing) and read (9% savings, not worth interception) |
+| rtk (installed) | Keep; tuned | 74.6% savings on command output. grep and rg excluded via `hooks.exclude_commands` (2026-07-31) so indexed search owns those paths; the read rewrite stays active for now (9% savings, no conflict) and gets revisited at the checkpoint |
 | qmd | Adopt | Hybrid BM25 + vector + rerank over markdown via MCP; fills the doc-search gap. Details in §5 |
 | codegraph (installed) | Keep | Fills the code-structure slot the old plan assigned to CBM |
 | claude-mem | Defer | Automatic episodic memory; per-session overhead works against pain #1. Revisit at the §10 checkpoint |
@@ -35,7 +35,7 @@ File-based (Stack A), mapped to the standard taxonomy:
 
 - Working: context hygiene via rtk, index-first search, offset/limit reads, haiku delegation.
 - Semantic: BMAD hub artifacts (PRD, architecture, stories, retros) plus repo-committed `memory/MEMORY.md` per the global CLAUDE.md Project Memory rules (authoritative in repo, mirrored to harness memory).
-- Episodic: handoff notes written to the hub by the BMAD handoff skill (§8), indexed by qmd. claude-mem stays a deferred add-on.
+- Episodic: handoff notes in `memory/handoffs/` in every project (the hub's, in hub-and-spoke setups), written by the handoff skill (§8), indexed by qmd. claude-mem stays a deferred add-on.
 - Procedural: skills; global CLAUDE.md carries a suggest-list for user-invoked-only skills.
 
 ## 5. Search and retrieval layer
@@ -61,9 +61,10 @@ Deliberately excluded, with reasons recorded: the work setup's anti-native-tools
 ## 8. Skills to author (implementation phase)
 
 1. `bmad-hub-setup` (user-level, canonical in `~/.agents/skills`): instantiates `docs/templates/hub-CLAUDE.md` with project specifics (spoke real paths, modules, artifact locations); rebuilds the `.claude/skills` symlink farm and reports drift after BMAD installer runs; verifies hub structure.
-2. `bmad-handoff`: replaces the generic handoff destination. Writes to the hub (`_bmad-output/handoffs/` or hub-configured path) with YAML frontmatter (story key, epic, repos touched, date), a multi-repo state block (branch, worktree, uncommitted work per spoke), and content scoped to the delta over BMAD artifacts. Optional baton-pass flag seeds a background agent. Borrow no-duplication and redaction rules from the Pocock original.
+2. `bmad-handoff`: replaces the generic handoff destination. Writes to `memory/handoffs/` (the hub's, for hub-and-spoke) with YAML frontmatter (story key, epic, repos touched, date), a multi-repo state block (branch, worktree, uncommitted work per spoke), and content scoped to the delta over BMAD artifacts. Handoffs stay out of `_bmad-output/`: that tree is workflow-owned current-state truth, and BMAD's state scanning must not see foreign files. Optional baton-pass flag seeds a background agent. Borrow no-duplication and redaction rules from the Pocock original.
+3. `consolidate-memory` (hand-rolled, from the work setup): adopt at user level, then extend with a handoff lifecycle: `memory/handoffs/` becomes a first-class inventory slice; consolidation extracts durable facts from resolved handoffs into the memory corpus, then moves spent handoffs to `memory/handoffs/_archive/`; recent or unresolved handoffs are never pruned. Its BMAD inventory slice additionally covers `_bmad/_memory/` (agent sidecar memory) as a read-only pseudo-memory source. Alternatives survey (2026-07-31) found no replacement: AutoDream is Managed-Agents-cloud only, Dream-Skill and Memory Organize lack the approval gate, loss-check ledger, and BMAD guardrails. Keep the hand-rolled base; borrow from the field: a staleness auto-trigger (Dream-Skill pattern, matches the marker-plus-hook design), an explicit MEMORY.md size cap that forces distillation as the index grows (AutoDream pattern), and relative-to-absolute date conversion during consolidation. Triggering: (a) inflection points via a Suggest These Skills row added at install time (MEMORY.md index grown large, unarchived handoffs piling up, contradictions surfacing during recall, an epic retro just closed); (b) cadence via a `memory/.last-consolidated` marker the skill writes in its report phase, checked by a lightweight session-start hook that nudges when older than about a month; interim zero-engineering option is a recurring todoist task.
 
-Both authored against writing-great-skills.
+All authored or extended against writing-great-skills.
 
 ## 9. Implementation sequence
 
@@ -73,8 +74,9 @@ Both authored against writing-great-skills.
 4. Install qmd; build collections for active hubs (start: ai-scratch, lyceum-planning, marshal-planning); `qmd context add`; enable daemon; register MCP server.
 5. `codegraph init` on active spokes.
 6. Author bmad-hub-setup and bmad-handoff; instantiate hub CLAUDE.md in active hubs.
-7. Optional: ccusage for a spend baseline ahead of the checkpoint.
-8. Place work-computer skills when the claude_setup re-copy lands (auth0-* to work projects, write-like-me and todoist likely user-level, consolidate-memory merged into global memory rules).
+7. Writing stack: adopt or author a concise-writing skill for polished human deliverables and an AI-tell edit-pass skill (the master plan's Strunk & White and avoid-AI-writing actions); review and install the work write-like-me skill (personal-voice messages) at user level. The constraint block in global CLAUDE.md is the universal layer; these skills are the polished tier.
+8. Optional: ccusage for a spend baseline ahead of the checkpoint.
+9. Place work-computer skills from the claude_setup copy (auth0-* to work projects, write-like-me and todoist candidates for user level, consolidate-memory reviewed against the global memory rules).
 
 ## 10. Checkpoint (about one month out)
 
