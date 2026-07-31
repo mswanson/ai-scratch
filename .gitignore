@@ -4,3 +4,6 @@
 scripts/*.log
 __pycache__/
 *.pyc
+route53-inventory/
+cloudflare-migration/zones/
+_bmad/*.bak
