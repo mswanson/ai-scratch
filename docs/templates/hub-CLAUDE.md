@@ -68,6 +68,10 @@ Project-specific workflow docs are authoritative and take precedence over generi
 |---|---|
 | {{DOC_PATH}} | {{DOC_PURPOSE}} |
 
+## Permissions
+
+Run `/fewer-permission-prompts` after the first few sessions in this hub, and again when tool patterns change; it keeps the project allowlist current so read-only commands stop prompting.
+
 ## Modules Installed
 
 <!-- Keep in sync with _bmad/_config/manifest.yaml; module changes go through `npx bmad-method install` (Modify Install), never manual edits. -->
