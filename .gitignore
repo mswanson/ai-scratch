@@ -7,3 +7,4 @@ __pycache__/
 route53-inventory/
 cloudflare-migration/zones/
 _bmad/*.bak
+docs/claude_setup/
