@@ -1,6 +1,6 @@
 <!--
 Template: BMAD planning-hub CLAUDE.md
-Instantiated by /bmad-hub-setup. Replace every {{placeholder}}; delete any
+Instantiated by /forge-hub. Replace every {{placeholder}}; delete any
 section that does not apply. Do not duplicate global CLAUDE.md content here
 (style, subagent models, search discipline, BMAD precedence, memory rules,
 handoff behavior are all global). This file holds only what is specific to
