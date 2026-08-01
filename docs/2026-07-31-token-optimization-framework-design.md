@@ -1,6 +1,6 @@
 # Token Optimization Framework: Consolidated Design
 
-Date: 2026-07-31. Supersedes the June 2026 "BMAD Token Optimization: Master Plan" as the single source of truth; that plan's surviving pieces are folded in below, its retired pieces are listed in the deferred/retired ledger so they are not re-litigated.
+Date: 2026-07-31. History note: on 2026-08-01 the repo's history was rewritten (`git filter-repo`) to purge `docs/claude_setup/` — work-laptop material accidentally committed by a `git add -A` sweep and pushed; commit shas cited in this doc from 2026-07-31 onward may not resolve after the rewrite (the work is findable by commit message). The directory now lives on disk gitignored, per original intent; a pre-purge bundle is in `~/.claude/backups/2026-08-01-claude-setup-purge/`. Supersedes the June 2026 "BMAD Token Optimization: Master Plan" as the single source of truth; that plan's surviving pieces are folded in below, its retired pieces are listed in the deferred/retired ledger so they are not re-litigated.
 
 ## 1. Goals
 
