@@ -38,7 +38,7 @@ Files inside any `_archive/` or `archive/` folder are historical record only. Ne
 
 ## BMAD Framework Files — Do Not Modify
 
-Installer-generated and replaced on install or upgrade; never edit directly: `bmad-*` skills (canonical files in `.agents/skills/bmad-*`, symlinked from `.claude/skills/bmad-*`), the module trees under `_bmad/` (`core/`, `bmm/`, etc.), `_bmad/scripts/`, `_bmad/_config/`, `_bmad/config.toml`, and every module `config.yaml` (all generated from installer answers).
+Installer-generated and replaced on install or upgrade; never edit directly: `bmad-*` skills (on repos running bmad-loop: real directories in every registered CLI tree — `.claude/skills`, `.agents/skills`, `.agent`; elsewhere they may be canonical in `.agents/skills` with `.claude/skills` symlinks), the module trees under `_bmad/` (`core/`, `bmm/`, etc.), `_bmad/scripts/`, `_bmad/_config/`, `_bmad/config.toml`, and every module `config.yaml` (all generated from installer answers).
 
 Yours to edit: `_bmad/custom/` overrides (the customization surface below) and `_bmad/config.user.toml` for pinning config values. To change an install answer durably, re-run the installer; it remembers prior answers. Custom module trees (bmb-built, e.g. a project-specific module) are owned by their module source. Non-bmad skills in either skills tree are project-owned.
 
