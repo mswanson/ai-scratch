@@ -101,7 +101,7 @@ Review with usage data: did handoffs plus qmd close the re-explaining gap (else 
 
 ## 11. Deferred and retired ledger
 
-Deferred: claude-mem trial; Memory MCP GA (lyceum-scoped); named subagent roster (fetch-summarize, planning-recall, codebase-recon) if delegation policy proves insufficient; playwright placement; discord repo confirmation; gws restoration if Workspace work returns.
+Deferred: dotfiles repo overhaul — mswanson/dotfiles is a fork needing fork-handling decisions; statusline.sh checked in there (c31cb7f, live copy at ~/.claude/statusline.sh not yet symlink-wired); agent-skills install.sh integration lands in the same pass. claude-mem trial; Memory MCP GA (lyceum-scoped); named subagent roster (fetch-summarize, planning-recall, codebase-recon) if delegation policy proves insufficient; playwright placement; discord repo confirmation; gws restoration if Workspace work returns.
 
 Retired, do not re-litigate: context-mode, headroom, caveman, ponytail on this machine, CBM (codegraph fills the slot), Agent Teams env-var experiments (native Workflow tool and bmad-loop cover orchestration), CLAUDE_CODE_SUBAGENT_MODEL floor (hook approach won), anti-native-tools blanket routing, mitmproxy-style interception, Bedrock/LiteLLM proxy economics (not owner-controlled).
 
