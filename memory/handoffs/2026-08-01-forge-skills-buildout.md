@@ -2,7 +2,7 @@
 date: 2026-08-01
 topic: forge-skills buildout — remaining authoring, audit, and teardown
 repos: [ai-scratch, forge-skills, dotfiles]
-status: open
+status: resolved
 ---
 
 # Handoff: forge-skills buildout continuation
