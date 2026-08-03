@@ -81,16 +81,32 @@ status: open
   domains at the user's request; **$284.16/yr** if paideo is included (adds
   `.app` $14.20 + `.io` $50.00 + `.school` $28.20 + 1 more `.com`). User said
   "don't do anything now."
-- S3 → R2 migration — scoped once, early in the session, never started.
-  Scope notes: 4 of the 7 real-content domains are straightforward S3
-  static-website-hosting (`michaelswanson.me`, `1524interactive.com`,
+- S3 → R2 migration — scoped once, early in the session; scope expanded
+  2026-08-03 when the user flagged there's more than the 2 website buckets
+  — other data living in S3 that could/should move too. Still not started.
+  Original scope notes: 4 of the 7 real-content domains are straightforward
+  S3 static-website-hosting (`michaelswanson.me`, `1524interactive.com`,
   `designsbyimagineif.com` — plus `annekeswanson.com`/`imagineifdesigns.com`
   are Squarespace, not S3). 2 domains go through CloudFront
   (`budswanson.com`, `easelkids.com`) whose *origin* was never actually
-  checked — could be S3, could be something else. Would need AWS read
-  access again (currently only have `aws login` temp creds, no standing
-  read access) plus new Cloudflare R2 write permissions (current OAuth
-  grant is DNS-only).
+  checked — could be S3, could be something else.
+  To proceed, need from the user:
+  - AWS S3 read access again (currently only `aws login` temp creds, no
+    standing access) — same per-profile pattern as the Route 53 inventory.
+  - A full bucket inventory across both accounts (not just the known
+    website buckets) — what each bucket is for, whether other
+    apps/CI/backups read or write it (those need repointing to R2's
+    S3-compatible endpoint after the copy), and whether it's public or has
+    bucket policies/CORS/lifecycle rules worth preserving.
+  - New Cloudflare R2 write permissions (current OAuth/token grant is
+    DNS-only).
+  - A decision on whether the 2 CloudFront-fronted sites keep CloudFront or
+    move to Cloudflare's own CDN/proxy in front of R2 — keeping AWS
+    CloudFront in the picture is odd given the migration's whole point.
+  Cloudflare has native migration tooling worth using instead of hand-rolled
+  `aws s3 sync`/`rclone`: **Super Slurper** (bulk one-time copy) and
+  **Sippy** (incremental/on-demand migration) — worth checking per-bucket
+  size before picking one.
 
 ## Next work
 
@@ -103,9 +119,12 @@ status: open
    transfer within 45 days of a Hover auto-renewal (no credit for the extra
    year, real double-pay), and don't wait until inside 15 days of expiration
    (renew at Hover first if so).
-3. If resuming S3→R2: first confirm what's actually behind the
-   `budswanson.com`/`easelkids.com` CloudFront distributions before assuming
-   they're S3-backed.
+3. If resuming S3→R2: get AWS S3 read access (both profiles) and run a
+   full bucket inventory first — scope is now broader than the 2 known
+   website buckets. Then confirm what's behind the
+   `budswanson.com`/`easelkids.com` CloudFront origins, and decide whether
+   CloudFront stays or gets replaced by Cloudflare's own CDN. Consider
+   Super Slurper / Sippy for the actual data copy.
 4. Optional/low-priority: spot-check the other migrated domains' Hover
    Forwards tabs for hidden redirect config like the one found on
    `annekeswanson.com`.
@@ -174,8 +193,9 @@ status: open
 - Whether/when to proceed with the registrar transfer, and for which set of
   domains (15 excluding paideo was the last quoted scope, at the user's
   request).
-- Whether/when to start S3→R2, and whether to check the CloudFront origins
-  first.
+- Whether/when to start S3→R2: needs AWS S3 read access granted, a full
+  bucket inventory (broader than the 2 website buckets — user confirmed
+  other bucket data exists too), and a CloudFront keep-or-drop decision.
 - Whether it's worth auditing other domains' Hover Forwards tabs.
 
 ## Suggested skills
