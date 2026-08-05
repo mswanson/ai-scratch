@@ -30,7 +30,7 @@ Goal: zero submodules; plain files or brew-managed.
 
 ## 4. Token-optimization stack in bootstrap
 
-Make `make bootstrap` on a fresh machine reproduce the framework machine setup (design: `docs/2026-07-31-token-optimization-framework-design.md` §3, §5, §6). Today most of it is hand-installed and unreproducible.
+Make `make bootstrap` on a fresh machine reproduce the framework machine setup (design: `_bmad-output/planning-artifacts/2026-07-31-token-optimization-framework-design.md` §3, §5, §6). Today most of it is hand-installed and unreproducible.
 
 - [ ] **Binaries**: pin install method for the stack: rtk (brew formula, done), qmd and codegraph (in `/opt/homebrew/bin` but not brew-tracked; add tap/formula or an install script step).
 - [ ] **rtk config**: locate the tuned config (`hooks.exclude_commands` for grep/rg per design §3) and track it in dotfiles + dotbot link.

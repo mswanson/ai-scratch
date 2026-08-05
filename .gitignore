@@ -8,3 +8,5 @@ route53-inventory/
 cloudflare-migration/zones/
 _bmad/*.bak
 docs/claude_setup/
+_bmad/render/
+.claude/settings.local.json
