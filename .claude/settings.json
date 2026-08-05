@@ -19,6 +19,18 @@
     ]
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(git *)",
+            "command": "jq -r '.tool_input.command // \"\"' | grep -qE 'git[^;&|]*push[^;&|]*(--force(-with-lease)?([= ]|$)| -f( |$))' && printf '%s' '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"ask\",\"permissionDecisionReason\":\"force push — confirm\"}}' || true"
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "hooks": [
