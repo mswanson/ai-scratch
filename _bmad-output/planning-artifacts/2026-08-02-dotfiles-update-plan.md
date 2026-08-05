@@ -4,7 +4,7 @@ Working plan for the `dotfiles` spoke (`/Users/michaelswanson/Code/dotfiles`). T
 
 ## 1. Open decisions (small, unblock the docs pass)
 
-- [ ] **Go: in or out.** Go isn't installed anywhere (no asdf plugin, no Brewfile entry) but README claims Go development support. Either add it (asdf plugin + `golang` in `symlinked/tool-versions.sh`) or strip the Go claims from README and `make install-languages`. Leaning out unless Go work is actually planned.
+- [ ] **Go: in or out.** Go isn't installed anywhere (no asdf plugin, no Brewfile entry) but README claims Go development support. Either add it (asdf plugin + `golang` in `symlinked/tool-versions.sh`) or strip the Go claims from README and `make install-languages`. Leaning out unless Go work is actually planned. *Status 2026-08-05: decision deferred by owner until dotfiles work resumes; standing recommendation is out. Pick this up first when the walkthrough restarts.*
 - [ ] **`config/git/work.gitconfig`: fill or delete.** The `includeIf` wiring in `symlinked/gitconfig.sh` works, but the target is an unfilled template (`YOURCOMPANY.com`). Fill with forge512 identity, or delete the template and the README "smart identity switching" claim until there's a second identity to switch to.
 - [ ] **`symlinked/gemrc.sh`: keep or drop.** Last Ruby remnant, still linked to `~/.gemrc`. Harmless with Homebrew ruby; contradicts the no-Ruby-tooling goal.
 
