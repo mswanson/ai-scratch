@@ -13,8 +13,8 @@ status: open
 
 Read these first; do not re-derive what they settle.
 
-- `docs/2026-08-02-dotfiles-update-plan.md` — the working punch-list for the dotfiles spoke. Six sections; the walkthrough executes it top to bottom. This handoff only carries session state on top of it.
-- `docs/2026-07-31-token-optimization-framework-design.md` §3, §5, §6 — authoritative for plan §4 (bootstrap of rtk/qmd/codegraph/MCP/skills chain).
+- `_bmad-output/planning-artifacts/2026-08-02-dotfiles-update-plan.md` (moved from `docs/` 2026-08-04) — the working punch-list for the dotfiles spoke. Six sections; the walkthrough executes it top to bottom. This handoff only carries session state on top of it.
+- `_bmad-output/planning-artifacts/2026-07-31-token-optimization-framework-design.md` §3, §5, §6 — authoritative for plan §4 (bootstrap of rtk/qmd/codegraph/MCP/skills chain).
 - `memory/MEMORY.md` + the dotfiles-spoke context line — hub-and-spoke wiring, real-path rule, what `~/.claude` symlinks exist.
 - dotfiles repo `main` at `9f17f74` (pushed, in sync with origin) — the 2026-08-01/02 cleanup commits; `git log` there is the record of what was already removed.
 

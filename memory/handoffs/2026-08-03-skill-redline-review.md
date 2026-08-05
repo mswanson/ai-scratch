@@ -13,8 +13,8 @@ status: open
   batch-4 punch list, capstone ordering, older constraints. This handoff
   layers the redline-review pass on top; that one stays authoritative for
   batch 4 / capstones / dry-run sequencing.
-- `docs/2026-07-31-token-optimization-framework-design.md` — framework
-  design; §6 naming (settled, do not reopen), §8.5 implement-story design.
+- `_bmad-output/planning-artifacts/2026-07-31-token-optimization-framework-design.md`
+  (moved from `docs/` 2026-08-04) — framework design; §6 naming (settled, do not reopen), §8.5 implement-story design.
   New "Later" item 2026-08-03: extend loop init beyond `--cli claude` to
   codex.
 - `~/Code/forge-skills` main @ `4cdd9b8`, clean, pushed — every change of

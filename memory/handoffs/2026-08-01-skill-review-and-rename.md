@@ -9,7 +9,7 @@ status: open
 
 ## Authoritative context
 
-- `docs/2026-07-31-token-optimization-framework-design.md` — the framework design. §6 carries the SECOND naming revision (prefix dropped, descriptive imperative verbs, mapping table old→new; never a `bmad-*` prefix, infix fine; never shadow installer skills); §8.5 the implement-story design + audit record. §8 headings keep old forge-* names as history — the §6 mapping translates.
+- `_bmad-output/planning-artifacts/2026-07-31-token-optimization-framework-design.md` (moved from `docs/` 2026-08-04) — the framework design. §6 carries the SECOND naming revision (prefix dropped, descriptive imperative verbs, mapping table old→new; never a `bmad-*` prefix, infix fine; never shadow installer skills); §8.5 the implement-story design + audit record. §8 headings keep old forge-* names as history — the §6 mapping translates.
 - `~/Code/forge-skills` — canonical skills repo (remote forge512/agent-skills). Current skill roster after the 2026-08-01 rename: manage-planning-repos, operate-bmad-loop, implement-story, write-handoff, consolidate-memory, redline-file, manage-todoist, write-like-me. README carries the naming rule; `make test` = 132 scenarios across 8 suites, all green at fd0f584.
 - The four review reports (this session, 2026-08-01) produced batches: 1 = bugs+security (DONE, 091db24), 2 = design decisions (DONE: HIL/status reconciliation 1add1ab, _bmad-output scoping + config-resolved artifacts dir 3594707, go/no-go gate 7e612ff), 3 = test debt + type-check gate (DONE, fd0f584). Batch 4 items listed under Next work — sourced from the review, no need to re-run reviewers.
 - `memory/handoffs/2026-08-01-forge-skills-buildout.md` (resolved) — prior handoff; per-skill provenance if needed.

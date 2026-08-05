@@ -9,6 +9,8 @@
 - [Dotfiles update plan](../_bmad-output/planning-artifacts/2026-08-02-dotfiles-update-plan.md) — working punch-list for the dotfiles spoke; post-cleanup phase
 - [bmad-loop version pins](bmad-loop-pins.md) — tool pinned to tag v0.9.1; symlinked-skills layout caveats
 - [Framework design (authoritative)](../_bmad-output/planning-artifacts/2026-07-31-token-optimization-framework-design.md)
-- [Hub CLAUDE.md template](../docs/templates/hub-CLAUDE.md)
+- Hub/spoke CLAUDE.md templates live in the manage-planning-repos skill assets (forge-skills repo); the old `docs/templates/` copy is archived at `_archive/templates/`
+- [Cloudflare token rolling](cloudflare-token-rolling.md) — same token ID recurring = user rolled the secret; don't nag to delete/recreate
+- [Cloudflare migration state](handoffs/2026-08-02-cloudflare-migration.md) — 15 domains migrated; forge512.com, registrar transfer, S3→R2 paused; brief at `_bmad-output/planning-artifacts/cloudflare-migration-brief.md`
 - [CLI skill trees](cli-skill-trees.md) — .agent (singular) is Antigravity's dir, not an orphan
 - [Handoffs](handoffs/)
