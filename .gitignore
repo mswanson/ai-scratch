@@ -10,3 +10,4 @@ _bmad/*.bak
 docs/claude_setup/
 _bmad/render/
 .claude/settings.local.json
+.codex/tmp/
