@@ -39,6 +39,7 @@ Make `make bootstrap` on a fresh machine reproduce the framework machine setup (
 - [ ] **Claude plugin set**: global plugins are already reproducible via tracked `settings.json` `enabledPlugins`; verify a fresh-machine run actually installs them.
 - [ ] **Skills chain**: bootstrap step that clones `~/Code/forge-skills` and runs its `install.sh` (the `~/.claude/skills → ~/.agents/skills → repo` chain), then restores third-party skills from the tracked `.agents/skill-lock.json` manifest.
 - [ ] **doctor.sh coverage**: checks for the whole chain: rtk hook firing, qmd MCP answering, codegraph on PATH, `~/.claude/*` symlinks intact.
+- [ ] **LiteLLM stack install script.** The stack itself landed 2026-08-06 in `config/litellm-stack/` (dotbot-linked to `~/litellm-stack`, plist linked into `~/Library/LaunchAgents/`), but bringing it up on a fresh machine is still the hand-run sequence in that directory's README: brew Ollama + `ollama pull`, brew LM Studio cask + manual onboarding + three `lms get` pulls (~74 GB), `~/.config/litellm/.env` creation with a generated master key, `docker compose up -d`. Write `scripts/setup-litellm.sh` to do the scriptable parts idempotently and prompt for what it can't (LM Studio's GUI onboarding, the two API keys), then wire it into `make bootstrap` and add a doctor check (proxy answering on :4000, both native backends reachable, LaunchAgent loaded).
 
 ## 5. Docs reconcile (after §1 decisions land)
 
