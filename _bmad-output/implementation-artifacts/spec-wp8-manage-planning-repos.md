@@ -2,7 +2,7 @@
 title: 'WP8: manage-planning-repos repair + wiring scripts'
 type: 'feature'
 created: '2026-08-11'
-status: 'in-progress'
+status: 'done'
 review_loop_iteration: 0
 baseline_commit: '26b518a' # = e3c757e + Swany's setup-owned provisioning rewrite (folded per decision)
 context:
@@ -54,12 +54,12 @@ context:
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `scripts/repair_skill_layout.sh materialize|relink|remove-dangling ...` -- per matrix; own relative-path helper; all three CLI trees supported (`.claude/skills`, `.agents/skills`, `.agent`)
-- [ ] `scripts/wire_qmd_collections.sh <root>` -- per matrix incl. the promised-but-never-implemented archive-in-collection walk
-- [ ] `scripts/bootstrap_structure.sh <root>` + `scripts/check_placeholders.sh <file>` + `scripts/gather_hub_context.sh <root>` + `scripts/diff_claude_sections.sh <a> <b>` + `scripts/detect_repo_type.sh <root>`
-- [ ] `scripts/run_board_state.sh <hub-root>` -- resolves `{skill-root}/../implement-story/scripts/compute-board-state.py`; missing → exit 3 + "implement-story not installed; tabulate manually"; `scripts/set_board_url.sh <config> <url>`
-- [ ] SKILL.md swaps at every Code Map site, preserving the provisioning rewrite verbatim and all menu/confirmation prose; the three placeholder-grep restatements collapse to one script citation
-- [ ] `tests/test_mpr_scripts.sh` chained from test_verify_hub.sh -- every matrix row incl. three-tree repair fixtures, archive-drift detection, sibling-absent fallback
+- [x] `scripts/repair_skill_layout.sh materialize|relink|remove-dangling ...` -- per matrix; own relative-path helper; all three CLI trees supported (`.claude/skills`, `.agents/skills`, `.agent`)
+- [x] `scripts/wire_qmd_collections.sh <root>` -- per matrix incl. the promised-but-never-implemented archive-in-collection walk
+- [x] `scripts/bootstrap_structure.sh <root>` + `scripts/check_placeholders.sh <file>` + `scripts/gather_hub_context.sh <root>` + `scripts/diff_claude_sections.sh <a> <b>` + `scripts/detect_repo_type.sh <root>`
+- [x] `scripts/run_board_state.sh <hub-root>` -- resolves `{skill-root}/../implement-story/scripts/compute-board-state.py`; missing → exit 3 + "implement-story not installed; tabulate manually"; `scripts/set_board_url.sh <config> <url>`
+- [x] SKILL.md swaps at every Code Map site, preserving the provisioning rewrite verbatim and all menu/confirmation prose; the three placeholder-grep restatements collapse to one script citation
+- [x] `tests/test_mpr_scripts.sh` chained from test_verify_hub.sh -- every matrix row incl. three-tree repair fixtures, archive-drift detection, sibling-absent fallback
 
 **Acceptance Criteria:**
 - Given a fixture with a symlinked `bmad-*` skill and a dangling custom link across all three trees, when the repair verbs run, then verify_hub.sh's corresponding detections go green and the index contains the staged fixes.
