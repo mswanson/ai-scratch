@@ -2,15 +2,30 @@
 
 Working plan for the `dotfiles` spoke (`/Users/michaelswanson/Code/dotfiles`). The 2026-08-01/02 cleanup is done: Claude config tracked and symlinked via dotbot, Okta era removed, dead weight deleted, `_bmad` removed, single tool-versions source, modernization guide archived and closed out. This plan covers what's next. Work lands as small direct commits to `main`; check items off here.
 
-## 1. Open decisions (small, unblock the docs pass)
+## 1. Open decisions — CLOSED 2026-08-16
 
-- [ ] **Go: in or out.** Go isn't installed anywhere (no asdf plugin, no Brewfile entry) but README claims Go development support. Either add it (asdf plugin + `golang` in `symlinked/tool-versions.sh`) or strip the Go claims from README and `make install-languages`. Leaning out unless Go work is actually planned. *Status 2026-08-05: decision deferred by owner until dotfiles work resumes; standing recommendation is out. Pick this up first when the walkthrough restarts.*
-- [ ] **`config/git/work.gitconfig`: fill or delete.** The `includeIf` wiring in `symlinked/gitconfig.sh` works, but the target is an unfilled template (`YOURCOMPANY.com`). Fill with forge512 identity, or delete the template and the README "smart identity switching" claim until there's a second identity to switch to.
-- [ ] **`symlinked/gemrc.sh`: keep or drop.** Last Ruby remnant, still linked to `~/.gemrc`. Harmless with Homebrew ruby; contradicts the no-Ruby-tooling goal.
+All three decided "out" and executed as small commits on dotfiles `main`.
+
+- [x] **Go: out.** `4824c8d` + `e31dd1e`. Traced to `c87ed97`, the commit that executed the archived 2025-12 modernization guide; that guide's mission line names Go, no commit or project ever used it. Was half-removed already: `ad102d1` dropped it from `tool-versions.sh` but left the automation, so `make setup-asdf` still installed the golang plugin on fresh machines, starship configured a prompt module, doctor reported the version. Eleven references stripped.
+- [x] **Work identity: deleted.** `904ae19`. The machinery was never connected: neither `~/code/work` nor `~/Code/work` has ever existed, `work.gitconfig` was the raw template, and the `github.com-work` SSH host alias it rewrites URLs to is absent from `~/.ssh/config` and from the repo. Commit signing has landed since, so a real second identity also needs its own signing key and `allowed_signers` entry — rebuilding against a real account beats resurrecting a guess. Dropped `work.gitconfig`, `personal.gitconfig` (unfilled, included by nothing), both `includeIf` blocks, and `verify-git-identity.sh` (doctor.sh already covers git identity), plus the make target, bootstrap step, and README claims.
+- [x] **Ruby: dropped.** `39c930f`. `gemrc.sh` (`--no-ri --no-rdoc`, deprecated a decade), its dotbot link, `~/.gemrc` unlinked, and the stale CLAUDE.md claim that `dev-utils.sh` holds Rails aliases (it holds none).
+
+### Bug found while verifying
+
+- [x] **`doctor.sh` aborted at the first failed check.** `1e782bd`. `set -e` plus check functions that `return 1` killed the run on the first missing tool — `error_msg` is even commented "don't exit". On this machine doctor had been dying at the Go check, so symlinks, git identity, language versions and CLI tools were never checked. Removed `set -e`; the script now tallies ISSUES and reports at the end as designed.
+
+### Findings the fixed doctor surfaced (feed §2)
+
+- [ ] **ripgrep not installed.** `rg` is not on PATH; doctor expects it. Install or drop the check.
+- [ ] **Node is not the pinned version.** `~/.tool-versions` pins `nodejs 22.12.0`; the running node is `/opt/homebrew/bin/node` v26.4.0 — Homebrew's node shadows the asdf shim. Python resolves correctly through asdf. Decide which manager owns node, then make PATH match.
 
 ## 2. Config surface review
 
 Line-by-line pass over each config surface, verifying every entry against tools actually installed and workflows actually used. Kill on sight; nothing is precious.
+
+73 files across seven directories: `symlinked/` (22), `scripts/` (20), `config/` (13), `exports/` (6), `aliases/` (5), `brew/` (5), `starship/` (2).
+
+**Method — file-first, not topic-first.** The Go removal proved topic-grep misses things: the 2025-12 cleanup grepped for `golang`, removed it from `.tool-versions`, and left the plugin install, the prompt module, and the doctor check behind. So for each file ask: *what consumes this, and is the tool it configures actually installed?* Then remove whole — file, dotbot entry, script reference, doctor check, README claim, live symlink in `$HOME` — never partially. Start with `symlinked/` (biggest, most likely stale).
 
 - [ ] `aliases/` (5 files): dead tool references (antigenrc comment in dev-utils), open TODOs (bat/exa in cli-utils), aliases for uninstalled tools.
 - [ ] `exports/` (4 remaining files): config.sh, functions.sh, paths.sh, colorize-config.sh; also `claude_update.sh` sourcing.
