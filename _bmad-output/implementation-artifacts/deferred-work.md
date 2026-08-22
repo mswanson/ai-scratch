@@ -143,6 +143,11 @@ These were dispositioned DECLINE-with-recorded-follow-up rather than the
   why: Process/privacy hardening, not a code defect. Cross-referenced with the style-profile.json content escalation.
   source: PR #4 (2026-08-22 wave)
 
+- what: Emoji codes matching abbreviation patterns are counted as prose abbreviations (`:fyi-2:` counts as `fyi`, `:lol:` as `lol`), overstating abbreviation habits for emoji-heavy writers; mask `_EMOJI_RE` matches before applying `_ABBREV_RE`.
+  where: `skills/write-like-me/scripts/compute_style_stats.py:284`
+  why: P2; profile-accuracy skew, part of the normalization-gap cluster.
+  source: PR #4 (2026-08-22 wave)
+
 ## PR #5 — manage-todoist
 
 PR #5 has two Merge-time closeout comments (2026-08-19 and 2026-08-22 — a
