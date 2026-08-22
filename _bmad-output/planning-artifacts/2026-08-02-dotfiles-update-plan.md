@@ -42,11 +42,22 @@ Owner decisions taken during the pass: bash is used interactively only (remote s
 
 Kept and verified clean: `asdfrc.sh`, `bash_profile.sh`, `bashrc.sh`, `default-npm-packages.sh`, `default-python-packages.sh`, `editorconfig.sh`, `hushlogin.sh`, `inputrc.sh`, `tool-versions.sh`, `zsh_plugins.txt`, `zshenv.sh` (the fpath hardening is deliberate), `zshrc.sh`.
 
+### Node, Homebrew, `exports/` — DONE 2026-08-21
+
+- [x] **Homebrew node dropped entirely** (`d5fa3ba`). It was never requested directly — it arrived as a dependency of `todoist-cli`, whose `td` is a node script with `/opt/homebrew/opt/node/bin/node` in its shebang. Reinstalling the CLI from npm under asdf removed the reason for it to exist and picked up two majors the formula was holding back (1.75.2 → 3.3.0). Two other globals lived under Homebrew's node and moved with it: `vercel` (55 → 59.3.0) and `@colbymchenry/codegraph` (1.1.1 → 1.5.0). That also closed the npm prefix leak — Homebrew's npm ships a builtin npmrc pinning `prefix=/opt/homebrew`, so `npm -g` wrote there even after node resolved through asdf. 374 MB of orphaned globals and three dangling `/opt/homebrew/bin` links cleaned up.
+- [x] **asdf carries current LTS and latest stable**: 24.19.0 (Krypton) and 26.7.0, confirmed against nodejs.org rather than assumed. `.tool-versions` pins the LTS; stale 22.12.0 and 24.8.0 uninstalled. `default-npm-packages.sh` now lists every global actually installed, so a fresh machine reproduces them.
+- [x] **ripgrep installed**, and doctor now reports zero issues.
+- [x] **Brewfiles reconciled** (`0e23f1e`). `brew bundle` had never worked: `Brewfile.sh` pulled the other lists in with a `file` directive that is not Brewfile DSL, so every run died with `undefined method 'file'`, and the paths pointed at `~/.config/brewfile`, which does not exist. Brewfiles are Ruby, so the lists load via `instance_eval` now. The four `homebrew/*` taps were folded into Homebrew in 2024; the five third-party taps actually in use were undeclared, so a fresh machine could not install their formulae. 23 installed formulae and 16 casks were undeclared (rtk, ollama, `mas` — which the mas entries depend on — gitleaks, uv, bun, the tap CLIs). Two names were wrong: `delta` is packaged as `git-delta`, `openssl` as `openssl@3`. Dropped as declared-but-never-installed: aws-sam-cli, fd, httpie, tesseract, jq (macOS ships `/usr/bin/jq`), postman, spotify, zotero, betterzip, and the `mas` entry for Pins. The whole QuickLook set went: nine plugins declared, none installed, and `patch-quicklook-plugins.sh` could not run anyway since it calls `greadlink` from coreutils, which is not installed. The `ruby` formula was uninstalled — nothing used it.
+- [x] **`exports/` cleaned** (`29babd9`). Same bug class as bashrc: `HISTIGNORE` and `HISTTIMEFORMAT` are bash variables zsh ignores, replaced with `HISTORY_IGNORE`. `LESS_TERMCAP_md` was set to `"${yellow}"`, a variable defined nowhere, so man page titles got an empty string. `SSH_KEY_PATH` pointed at `~/.ssh/dsa_id` — no such file, and OpenSSH removed DSA in 9.8. `BREW_CNF_HANDLER` is guarded on a handler from the untapped `homebrew/command-not-found`, so the oh-my-zsh command-not-found plugin had nothing to call; both dropped. `colorize-config.sh` was already gone with its plugin.
+
 ### Open items carried out of the `symlinked/` pass
 
-- [ ] **npm global prefix still points at Homebrew.** `npm config get prefix` returns `/opt/homebrew`, set by the builtin npmrc inside Homebrew's npm, so `npm -g` installs land outside asdf even though `node` and `npm` now resolve through the shims. Decide whether Homebrew's node can go (only `todoist-cli` depends on it) or whether to override the prefix.
-- [ ] **asdf nodejs 22.12.0 is still installed** and now unreferenced; `asdf uninstall nodejs 22.12.0` when convenient.
-- [ ] **ripgrep is not installed** but doctor expects it and `aliases/` may reference it. Install or drop the check. Now the only issue doctor reports.
+All three closed above. New open items from the Homebrew pass:
+
+- [ ] **`hub` is installed and undeclared.** GitHub archived it in 2022 and `gh` supersedes it. Uninstall, or declare it if still used.
+- [ ] **Stale cask receipts from upstream renames.** Both `docker`/`docker-desktop` and `todoist`/`todoist-app` are registered. Only the new names are declared. Removing the old receipts risks uninstalling the app itself, so this needs a careful `brew uninstall --cask` check rather than a blind removal.
+- [ ] **56 formulae are outdated.** Unrelated to correctness, but `brew bundle check` reports outdated as unsatisfied, which makes the check noisy until an upgrade pass runs.
+- [ ] **`claude_update.sh` blocks shell startup.** It runs a weekly `read -r` prompt on every new interactive shell; a terminal opened by a tool would hang on it. Consider making it non-blocking or dropping it now that Claude Code self-updates.
 
 ### Remaining directories
 
