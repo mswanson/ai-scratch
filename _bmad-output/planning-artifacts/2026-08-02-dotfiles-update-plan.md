@@ -27,6 +27,29 @@ Line-by-line pass over each config surface, verifying every entry against tools 
 
 **Method — file-first, not topic-first.** The Go removal proved topic-grep misses things: the 2025-12 cleanup grepped for `golang`, removed it from `.tool-versions`, and left the plugin install, the prompt module, and the doctor check behind. So for each file ask: *what consumes this, and is the tool it configures actually installed?* Then remove whole — file, dotbot entry, script reference, doctor check, README claim, live symlink in `$HOME` — never partially. Start with `symlinked/` (biggest, most likely stale).
 
+### `symlinked/` — DONE 2026-08-21 (21 files → 15)
+
+Owner decisions taken during the pass: bash is used interactively only (remote sessions, laptop setup); wget is installed solely so other tools can call it; vimrc to be cleaned up rather than dropped; asdf owns node and `.tool-versions` stays current.
+
+- [x] **Six dropped** (`4351630`). `curlrc.sh` and `wgetrc.sh` both spoofed the user agent as IE on Windows 7 — curl's applied to every call on the machine, and wget's callers should get stock behaviour, not `robots=off` plus verbose `server_response`. `wget-hsts.sh` and `stCommitMsg.sh` are mutable state, not config: wget's HSTS cache (its one entry expired 2023) and the scratch file SourceTree writes commit messages into — tracking them means those tools write into the repo. `psqlrc.sh` configured an uninstalled psql. `bashenv.sh` existed so `#!/bin/bash` scripts would inherit aliases, but `BASH_ENV` was exported from `bashrc.sh`, which only interactive bash reads, while `BASH_ENV` is only consulted by non-interactive shells — the login shell is zsh, so it never fired.
+- [x] **`gitignore_global.sh` opened with `syntax: glob`** (`89d3d4e`) — Mercurial syntax; git read it as a literal pattern. Rewritten with macOS, editor and secrets patterns.
+- [x] **`zshrc.sh` sourced a gcloud SDK on the Desktop** (`89d3d4e`) that does not exist; gcloud is not installed. Four dead lines plus a commented template TODO block.
+- [x] **`bashrc.sh` history was non-functional** (`81c11b6`): `SAVEHIST` is zsh-only and `BASH_HISTFILE` is not a bash variable, so history ran on defaults. Now `HISTSIZE`/`HISTFILESIZE`/`HISTFILE`. Also dropped `GREP_OPTIONS`, removed from GNU grep in 2014 and ignored by the ugrep now installed as grep.
+- [x] **`vimrc.sh` rewritten** (`0ab049b`). Was mostly commented-out Vundle scaffolding for a plugin manager never installed. Now built-in settings only, so it works on a bare machine: indentation matches editorconfig at 2 spaces, persistent undo, swap/backup out of the working directory, gitcommit wraps at 72 with spell-check. `nohlsearch` moved off `<CR>`, which shadowed Enter in quickfix.
+- [x] **`gitconfig.sh` cleaned** (`c1b1240`). The `git://` shorthands mapped `github:` and `gist:` onto a protocol GitHub disabled in January 2022. The `[filter "lfs"]` block declared `required = true` while git-lfs is not installed, which makes any repo with LFS pointers fail hard. Dropped the inert `gpg program` line (signing is `format = ssh`) and the placeholder comments.
+- [x] **Colorize plugin dropped** (`9185502`). Its `ccat`/`cless` need pygmentize, not installed. `exports/colorize-config.sh` was orphaned — nothing sourced it, and it pointed at `lib/tasks/install-pygments.sh`, removed in an earlier cleanup. `bat` covers it.
+- [x] **Node: asdf now owns it** (`928bbd8`). Three versions disagreed — `.tool-versions` pinned 22.12.0, asdf had 24.8.0 selected, Homebrew's v26.4.0 actually ran, because the oh-my-zsh asdf plugin adds shims during antidote load and `exports/paths.sh` then prepended `/opt/homebrew/bin` ahead of them. paths.sh now puts shims first explicitly; `.tool-versions` pinned to 24.8.0. Also removed a stray untracked `~/Code/.tool-versions` that silently overrode the home file for every repo under `~/Code`.
+
+Kept and verified clean: `asdfrc.sh`, `bash_profile.sh`, `bashrc.sh`, `default-npm-packages.sh`, `default-python-packages.sh`, `editorconfig.sh`, `hushlogin.sh`, `inputrc.sh`, `tool-versions.sh`, `zsh_plugins.txt`, `zshenv.sh` (the fpath hardening is deliberate), `zshrc.sh`.
+
+### Open items carried out of the `symlinked/` pass
+
+- [ ] **npm global prefix still points at Homebrew.** `npm config get prefix` returns `/opt/homebrew`, set by the builtin npmrc inside Homebrew's npm, so `npm -g` installs land outside asdf even though `node` and `npm` now resolve through the shims. Decide whether Homebrew's node can go (only `todoist-cli` depends on it) or whether to override the prefix.
+- [ ] **asdf nodejs 22.12.0 is still installed** and now unreferenced; `asdf uninstall nodejs 22.12.0` when convenient.
+- [ ] **ripgrep is not installed** but doctor expects it and `aliases/` may reference it. Install or drop the check. Now the only issue doctor reports.
+
+### Remaining directories
+
 - [ ] `aliases/` (5 files): dead tool references (antigenrc comment in dev-utils), open TODOs (bat/exa in cli-utils), aliases for uninstalled tools.
 - [ ] `exports/` (4 remaining files): config.sh, functions.sh, paths.sh, colorize-config.sh; also `claude_update.sh` sourcing.
 - [ ] `brew/brewfiles/*`: diff against `brew list` / `brew bundle cleanup --dry-run`; remove uninstalled, add unmanaged (qmd and codegraph live in `/opt/homebrew/bin` but only rtk is a brew formula; see §4).
