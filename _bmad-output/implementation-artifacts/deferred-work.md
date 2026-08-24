@@ -7,6 +7,18 @@ README/Makefile sweep (root README Tests list + Layout bullet, recurring across
 every WP branch), and the `style-profile.json` verbatim-content escalation
 (tracked elsewhere).
 
+## Owner-requested follow-ups
+
+- what: The reply-to-a-comment feature in the redline review flow has a bug (owner report, 2026-08-24; no repro details yet — reproduce first, likely in `review.py reply` or the review page's reply path).
+  where: `skills/redline-file/` (scripts/review.py reply subcommand and/or the review server page)
+  why: Owner-reported defect, post-merge tweak request.
+  source: owner, 2026-08-24
+
+- what: Widen the review page container a bit.
+  where: `skills/redline-file/` (review server HTML/CSS)
+  why: Owner-requested UI tweak.
+  source: owner, 2026-08-24
+
 ## Cross-PR
 
 - what: Pin /bin/bash (or assert version) across all Makefile test targets so the "macOS bash 3.2" claim is enforced rather than PATH-luck.
