@@ -1,6 +1,10 @@
 # Dotfiles: Remaining Surfaces — Full Audit and Execution Plan
 
-**Status: reviewed twice plus a follow-up round on 2026-08-25; all three folded in.** Every file outside `lib/`
+**Status: EXECUTED 2026-08-25.** Stages 0-8 landed in ten commits on dotfiles
+`main`, `15a3dcd..cddb948`, tagged `pre-cleanup-2026-08-25` beforehand. `make
+doctor` passes identically to the baseline and shell startup is unchanged at
+0.21s. Three things are deliberately outstanding and listed at the very bottom
+under *What did not run*. Every file outside `lib/`
 has been read. Every proposed change is named by file and line, every removal
 carries its reason, and every question you raised in review is answered below or
 listed as still-open with a default.
@@ -210,15 +214,15 @@ so both need linking or a PATH entry.
 | Disk | small | larger, plus whatever the data directory grows to |
 | Maintenance | none | initdb, version upgrades, a service to remember |
 
-**Recommendation: `libpq`.** It is the client set, which is exactly what "agents
+**Decided 2026-08-25: `libpq`.** It is the client set, which is exactly what "agents
 need to interact with a database" means. Nothing in `~/Code` currently runs a
 local Postgres: no `docker-compose.yml` references one, and the marshal project
 uses Supabase, which is hosted. Installing the full server would add a service to
 manage for a database that does not exist yet.
 
-If you would rather have the server on hand, `postgresql@18` is the one to take
-(18 is current; `postgresql@17` is the previous major). Say which and I will
-declare it either way.
+A comment goes in `Brewfile.cli` next to the entry recording the upgrade path, so
+the next reader does not have to re-derive it: if a local server is ever needed,
+`brew install postgresql@18` supersedes this and brings its own `psql`.
 
 Either way **`pgreload` and `pgst` still go**: both call `pg_ctl`, which is a
 *server* control command and is not in `libpq`. What you get back is `psql`, which
@@ -707,10 +711,29 @@ Proposing `asdf uninstall` for both. About 400 MB.
   installed, so it has done nothing here. It was probably declared for a
   document-scanning idea that did not happen. *Default: drop it.*
 
-  **The one reason to keep it:** the recipe-corpus project is explicitly about
-  converting recipe PDFs and photographs to Cooklang, and OCR is the first step of
-  that pipeline. If that project is close, leave it declared; if it is a someday,
-  drop it and reinstall in one command when the time comes.
+  **Decided 2026-08-25: drop it,** with this note carried into the recipe-corpus
+  stub, because the choice is not obvious when that project starts.
+
+  **Tesseract vs an LLM for OCR.** They fail differently, and the difference
+  matters for recipes. Tesseract is deterministic pattern recognition: fast, free,
+  offline, and it degrades *visibly* — bad input yields garbled text you can see
+  is garbled. It is weak on handwriting, curved or skewed pages, columns, and
+  anything with a decorative layout, which describes most recipe cards and
+  cookbook scans. A vision LLM reads all of those far better, understands
+  structure (this is the ingredient list, that is the method), and can emit
+  Cooklang directly instead of raw text needing a second parsing pass.
+
+  The catch is the failure mode: an LLM degrades *invisibly*. It will confidently
+  produce a plausible quantity where the page was smudged, and "2 tsp" silently
+  becoming "2 tbsp" is worse than no recipe at all. Any LLM OCR path needs a
+  review queue; Tesseract's does not, because you can see it failed.
+
+  Practical read for the recipe corpus: **use a vision LLM, with review.** The
+  corpus is small enough that a human check per recipe is affordable, the sources
+  are exactly what Tesseract is worst at, and going straight to Cooklang skips a
+  whole conversion stage. Tesseract earns its place on clean typeset PDFs at
+  volume, which is not the shape of this backlog. Reinstall is one command if that
+  changes.
 
 **Declared, satisfied by something else (3):** `jq` resolves to `/usr/bin/jq`,
 macOS's own copy. `delta` and `openssl` are Homebrew *aliases* for `git-delta` and
@@ -1045,3 +1068,50 @@ WordPress site from 2023-08. Keep, export, or delete.
 - `config/litellm-stack/` (7 files). A working subsystem with its own 332-line
   README and a loaded LaunchAgent (`com.litellm.versioncheck`, last exit 0).
 - `config/qmd/index.yml`. Current; matches the ten collections qmd reports.
+
+
+---
+
+## What did not run
+
+Everything in Stages 0-8 landed except these, each for a stated reason.
+
+**5.4, the phased Homebrew upgrade.** 53 packages are still outdated. This was
+always independent of the cleanup, and it moves `zsh` (the login shell) and
+`asdf` (which owns every runtime), so it wants its own session with a shell
+restart and a `make doctor` between passes. `make upgrade` now exists for it.
+
+**5.3's remaining candidates.** `lua`, `unbound` and `rtmpdump` were removed as
+decided. Still installed and still unexplained: `grc` (proven to be referenced
+by nothing in the repo), `jid`, `tmux`, `htop`, `bun`. All are small; none is
+urgent. They need a yes/no each rather than analysis.
+
+**`make macos` was not applied.** The new 85-setting script is written, tested
+for syntax, and every domain verified live, but running it changes system
+preferences. It prompts and defaults to No. Run it when you want the settings.
+
+## Notes from execution
+
+Three things came up while doing the work that the plan did not predict.
+
+**The rollback script had a worse bug than `greadlink`.** It used `find $HOME
+-maxdepth 1`, so it only ever saw links directly in `$HOME`. Today most are
+deeper: `~/.claude/settings.json` at depth 2, `~/.config/starship/starship.toml`
+and the litellm LaunchAgent at depth 3. A "rollback" would have left 8 of 10
+links in place. Testing it against a throwaway `$HOME` is what found this, and
+that same test proved `launchctl bootout` ignores `$HOME` and unloaded the live
+litellm agent, which was bootstrapped straight back.
+
+**The `cc` alias was shadowing the C compiler.** `alias
+cc="/Users/michaelswanson/.asdf/shims/claude"` sat in front of `/usr/bin/cc`, so
+any `cc foo.c` in an interactive shell launched Claude. It was slated for
+removal as a hardcoded path; the shadowing was not noticed until the aliases
+were verified in a live shell afterwards.
+
+**Redis Stack could not uninstall itself.** `brew uninstall --cask
+redis-stack-server` fails with `undefined method 'exists?' for class File`: the
+October 2023 cask definition calls `File.exists?`, removed in Ruby 3, and the
+error happens while *loading* the cask, so `--force` does not help either. The
+Caskroom directory and its wrapper symlink went to the Trash instead, which is
+what the uninstaller would have done. Redis 8 was smoke-tested
+(start / ping / shutdown) afterwards.
