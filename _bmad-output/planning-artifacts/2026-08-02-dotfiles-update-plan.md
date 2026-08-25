@@ -65,14 +65,19 @@ All three closed above. New open items from the Homebrew pass:
 - [ ] `exports/` (4 remaining files): config.sh, functions.sh, paths.sh, colorize-config.sh; also `claude_update.sh` sourcing.
 - [ ] `brew/brewfiles/*`: diff against `brew list` / `brew bundle cleanup --dry-run`; remove uninstalled, add unmanaged (qmd and codegraph live in `/opt/homebrew/bin` but only rtk is a brew formula; see §4).
 - [ ] `config/`: `hammerspoon.lua` is orphaned (tool not installed, not linked); delete or install hammerspoon deliberately.
-- [ ] `scripts/`: leftover antigen references in `update.sh` and `rollback-dotfiles.sh`; verify `doctor.sh` checks match the post-cleanup file set.
+- [ ] `scripts/` (20 files) — leftover antigen references in `update.sh` and `rollback-dotfiles.sh`; verify `doctor.sh` checks match the post-cleanup file set. Findings so far, all from scripts that turned out not to run:
+  - **Two competing function libraries.** `scripts/lib/common.sh` (info, success, warn, error, confirm, print_header, require_command, require_macos, is_macos, is_apple_silicon, get_brew_prefix, is_sourced) is used by twelve scripts. The legacy `scripts/functions.sh` (info, error, success, question, confirm, condition, is_installed, clone_repo, asdf_plugin_update) has only two consumers left after `setup-iterm.sh` moved: `rollback-dotfiles.sh` and `set-default-shell.sh`. It has no `warn`, so a script written against the common-library idiom silently calls an undefined function. Its first line also sources `./config/exports/functions.sh`, a path that has not existed since the cleanup. Migrate both consumers and delete it.
+  - **`greadlink` is the recurring killer.** Both `setup-iterm.sh` (fixed, `c338622`) and `patch-quicklook-plugins.sh` (removed, `d4eff73`) resolved their own directory with `greadlink` from coreutils — which is commented out in `Brewfile.cli` and not installed. Any other script using it is dead on this machine. Sweep for it.
+  - **Scripts write settings that were never verified.** `setup-iterm.sh` set a font that is not installed and a `Working Directory` under the wrong username (`/Users/mswanson`). Assume the same class of bug in the other setting-writers, `setup-macos-defaults.sh` especially.
+  - **A commented Dropbox path remains** in `setup-iterm.sh`'s neighbours; Dropbox was uninstalled 2026-08-25, so `install.conf.yaml:44`'s `~/Dropbox/Code/ssh` TODO is dead too. That line is also evidence SSH keys once lived in Dropbox — relevant to the 1Password SSH agent plan.
 - [ ] `starship/`, `symlinked/` misc (curlrc, wgetrc, editorconfig, inputrc, psqlrc, hushlogin, stCommitMsg): still wanted?
 
 ## 3. Get rid of submodules
 
 Goal: zero submodules; plain files or brew-managed.
 
-- [ ] `lib/iTerm2-Color-Schemes` (huge upstream repo for what is probably one used scheme): identify the scheme(s) actually loaded by `make iterm` / `scripts/setup-iterm*`, vendor just those files, drop the submodule.
+- [x] **Themes vendored 2026-08-25** (`c338622`). `FirefoxDev` and `Neutron` are the two schemes `setup-iterm.sh` names; both now live in `config/iterm/themes` at 16 KB total, against 92 MB for the submodule's ~400 schemes.
+- [ ] **Drop the `lib/iTerm2-Color-Schemes` submodule.** Now unreferenced — nothing in `install.conf.yaml`, `scripts/` or the `Makefile` points at it since the themes were vendored. Removal is the full submodule dance, not just a delete: `git submodule deinit -f lib/iTerm2-Color-Schemes`, `git rm lib/iTerm2-Color-Schemes`, remove its `.gitmodules` stanza, and clear `.git/modules/lib/iTerm2-Color-Schemes`. Reclaims 92 MB of the repo. Check CLAUDE.md's "Third-party dependencies as git submodules" list and the `scripts/update.sh` submodule handling in the same pass.
 - [ ] `lib/bear-templates` (own repo): vendor the templates into `lib/` or keep as separate repo cloned on demand; drop the submodule either way.
 - [ ] `lib/macOS-defaults` is a plain vendored dir (not a submodule); leave as is or refresh while in there.
 - [ ] Update CLAUDE.md submodule docs and `scripts/update.sh` submodule handling once gone.
