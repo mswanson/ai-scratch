@@ -73,15 +73,44 @@ as machine-level rather than project-level.
   `~/.agents/.skill-lock.json`, so this part is already solved.
 - **8 real directories in neither**: `gws-docs`, `gws-docs-write`, `gws-drive`,
   `gws-drive-upload`, `gws-shared`, `gws-sheets`, `gws-sheets-append`,
-  `gws-sheets-read`. Google Workspace skills, present on disk, absent from the
-  lockfile.
+  `gws-sheets-read`. **Identified 2026-08-25** — see below.
 
 Nothing on disk is missing that the lockfile claims, so the lockfile is accurate
 as far as it goes. The problem is coverage, in two places.
 
-**Fix, part one:** find where the `gws-*` skills came from and either add them to
-`skill-lock.json` or move them into `forge-skills` and symlink them like the other
-eight. I cannot tell from the filesystem which is right; see the open questions.
+**The `gws-*` skills, identified.** They are **Google's own**, shipped with the
+official [Google Workspace CLI](https://github.com/googleworkspace/cli) — a Rust,
+Apache-2.0 tool for Drive, Gmail, Calendar, Sheets, Docs, Chat and Admin, built
+dynamically from Google's Discovery Service and designed for agents as much as
+humans. The repo is active (pushed 2026-08-25, 30.5k stars) and ships 100+ agent
+skills; you have eight of them.
+
+Their `SKILL.md` frontmatter pins `version: 0.22.5` and declares `requires: bins:
+[gws]`.
+
+**And that binary is not installed.** No `gws` on PATH, no openclaw binary or
+config, nothing in `settings.json` or `skill-lock.json`. The skill directories are
+dated **2026-04-12**. So all eight have been inert for four months: they describe
+a CLI that is not there.
+
+**There is a name trap worth knowing before you install anything.** `brew install
+gws` gets you *a different tool* — streakycobra's `gws` 0.2.0, "manage workspaces
+composed of git repositories". The one you want is **`googleworkspace-cli`**,
+which is at 0.22.5, exactly the version the skills declare. Homebrew knows they
+collide and refuses to install both. Same shape as the `rtk` collision already
+documented in `.claude/RTK.md`.
+
+**Recommendation: `brew install googleworkspace-cli`, declare it in
+`Brewfile.cli`, and add the eight skills to `skill-lock.json` with
+`googleworkspace/cli` as their source.** You said in the cleanup review that you
+"rely almost entirely on Google Workspace apps"; this is a CLI over exactly those
+apps that agents can drive, and it connects directly to two projects already
+stubbed: the recipe corpus (Docs and Drive) and the saved-reading agent (Docs and
+Sheets as destinations).
+
+The alternative is to delete all eight. They cost nothing sitting there, but they
+are noise in the skill list and they will keep looking like a reproducibility gap
+until one thing or the other happens.
 
 **Fix, part two:** nothing recreates the 8 `forge-skills` symlinks on a fresh
 machine. They depend on `~/Code/forge-skills` existing, which depends on cloning a
@@ -189,10 +218,15 @@ again whenever a bootstrap step changes.
 
 ## Open questions
 
-**Q1. The eight `gws-*` skills.** Are they yours (belonging in `forge-skills`
-alongside the other eight) or third-party (belonging in `skill-lock.json` with a
-source)? I can tell they exist and that nothing records them; I cannot tell where
-they came from. *No default: this one genuinely needs your answer.*
+**Q1. Closed 2026-08-25.** The `gws-*` skills are third-party: Google's own,
+from `googleworkspace/cli` v0.22.5, requiring a `gws` binary that is not
+installed. They belong in `skill-lock.json` with that source, and the binary
+belongs in `Brewfile.cli` as `googleworkspace-cli` (**not** `gws`, which is a
+different tool). See item 3 above.
+
+The one thing still needing you: **install the CLI, or delete the eight skills?**
+*Default: install it,* on the strength of your own "I rely almost entirely on
+Google Workspace apps".
 
 **Q2. Should `forge-skills` be cloned by dotfiles bootstrap, or stay a manual
 prerequisite?** Cloning it makes the bootstrap self-contained and creates a

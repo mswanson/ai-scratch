@@ -1,6 +1,6 @@
 # Dotfiles: Remaining Surfaces — Full Audit and Execution Plan
 
-**Status: reviewed twice on 2026-08-25, both rounds folded in.** Every file outside `lib/`
+**Status: reviewed twice plus a follow-up round on 2026-08-25; all three folded in.** Every file outside `lib/`
 has been read. Every proposed change is named by file and line, every removal
 carries its reason, and every question you raised in review is answered below or
 listed as still-open with a default.
@@ -52,6 +52,16 @@ Baseline: dotfiles `main` at `84b7294`, `make doctor` passing all 30 checks.
 | "we should audit the installed packages" | New Stage 5.3, groundwork already done. |
 | "no I don't" (swimtopia Ruby / bluegriffin PHP) | Q1 closed. asdf stays at two plugins. |
 | "what is the difference between awscli and aws-sam-cli?" | Answered below. `aws-sam-cli` comes off the manifest. |
+
+### Round three
+
+| Your question | Answer |
+|---|---|
+| "how does `brew install redis` move the CLIs from stack server?" | It does not. Corrected below, and it turned up that Redis Stack is EOL and Redis 8 already contains the modules. Changes the recommendation. |
+| "does postgres get installed with Beekeeper?" | No. Confirmed by searching the app bundle. `libpq` vs `postgresql@18` laid out below. |
+| "agreed drop aws-sam-cli" | Done. Removed from the manifest in 5.1. |
+| "what does tesseract do?" | OCR. Explained in 5.1, with the one reason to keep it. |
+| "what are the gws-* skills?" | Google's official Workspace CLI skills. Answered in the bootstrap plan, whose Q1 this closes. |
 
 ---
 
@@ -143,46 +153,76 @@ work starts later, one `brew install` restores it.
 
 ### Do redis and postgres need to be installed to run locally?
 
-You framed this exactly right: the GUIs are for you, the CLIs are for agents. The
-answer differs between the two.
+You framed this right: the GUIs are for you, the CLIs are for agents. The answers
+differ, and the redis one turned out bigger than a PATH fix.
 
-**Redis: the CLIs already exist on this machine, just not on PATH.** The
-`redis-stack-server` cask ships `redis-cli`, `redis-server`, `redis-benchmark`
-and `redis-sentinel`, but it puts them in
-`/opt/homebrew/Caskroom/redis-stack-server/7.2.0-v3/bin/`, which is not a PATH
-directory. That is the real reason the `redis` and `rdserver` aliases have never
-worked. Nothing was missing; it was unreachable.
+#### Redis: `brew install redis` does not move anything
 
-Two ways to fix it, and I recommend the second:
+Correcting the earlier wording, which was wrong. Homebrew formulae and casks are
+separate installs; nothing gets relocated. What actually happens:
 
-1. Add the Caskroom bin directory to PATH. Works, but the path contains the
-   version number, so it breaks on every cask upgrade.
-2. **`brew install redis`.** The formula puts `redis-cli` and `redis-server` in
-   `/opt/homebrew/bin` where everything finds them, and it can run as a brew
-   service. The cask keeps serving the Stack modules (search, JSON, timeseries)
-   for the GUI.
+- The cask keeps its binaries in
+  `/opt/homebrew/Caskroom/redis-stack-server/7.2.0-v3/bin/`. It links exactly one
+  of them, `redis-stack-server`, into `/opt/homebrew/bin`. `redis-cli` and
+  `redis-server` are deliberately left unlinked, which is why the aliases fail.
+- `brew install redis` installs a **second, independent copy** and links *its*
+  `redis-cli`, `redis-server`, `redis-benchmark` and `redis-sentinel` into
+  `/opt/homebrew/bin`. The cask's copies stay where they are, unused.
 
-One thing to flag while we are here: **the installed `redis-stack-server` cask is
-from October 2023, version 7.2.0-v3.** Redis 8 folded the Stack modules into core
-Redis, so the separate Stack distribution is effectively a dead branch. Worth a
-look during Stage 5.3, though it is doing its job today.
+So the honest description is "installs a current redis alongside the old one",
+not "moves the CLIs".
 
-**Postgres: nothing is installed at all.** No `psql`, no `pg_ctl`, no `pg_dump`
-anywhere on the machine. Beekeeper Studio bundles its own driver and exposes no
-CLI. So unlike redis, this genuinely needs an install.
+**Which raises the better question, and it has a clean answer.** The formula is at
+**redis 8.10.1**; the cask is **7.2.0-v3 from October 2023**. Two facts settle
+what to do:
 
-Recommendation: **`brew install libpq`** and link it. That is the Postgres
-*client* set (`psql`, `pg_dump`, `pg_restore`) with no server, which is what an
-agent talking to a remote or containerised database needs. Installing the full
-`postgresql@17` formula would also give you a local server, a data directory, and
-a launchd service you would then have to manage.
+- **Redis 8 folded the Stack modules into core.** Search, JSON, TimeSeries, Bloom,
+  cuckoo filter, top-k, count-min sketch and t-digest all ship in Redis Open
+  Source 8. The standalone RediSearch / RedisJSON / RedisTimeSeries / RedisBloom
+  modules are no longer separate things.
+- **Redis Stack is end-of-life.** Maintenance releases for Stack 6.2, 7.2 and 7.4
+  stopped in **December 2025**. Your 7.2.0-v3 is on a branch that stopped getting
+  fixes eight months ago.
 
-That choice decides row 12: `pgreload` and `pgst` both call `pg_ctl`, which is a
-*server* control command and is not in `libpq`. So those two aliases go regardless;
-what you get back is `psql` for actually querying.
+**Recommendation: `brew install redis`, then drop the `redis-stack-server` cask.**
+One current, maintained package replaces a dead 2023 one and gives you strictly
+more: the same modules, plus `redis-cli` and `redis-server` on PATH, plus `brew
+services` to start and stop it. `redis-stack-redisinsight` (the GUI) is unaffected;
+it talks to any Redis over the wire.
 
-**Neither is urgent.** No `docker-compose.yml` in `~/Code` references redis or
-postgres, so nothing is currently blocked on this.
+One thing to check before running it: the formula **conflicts with `valkey`**,
+which is not installed here, so there is nothing in the way.
+
+#### Postgres: nothing is installed, and Beekeeper does not help
+
+Confirmed by searching inside the app bundle: **Beekeeper Studio ships no `psql`
+and no `libpq`.** It is an Electron app using a JavaScript Postgres driver, so it
+speaks the wire protocol itself and exposes no command-line tool. Nothing else on
+the machine provides `psql`, `pg_ctl` or `pg_dump` either.
+
+So this genuinely needs an install, and there are two shapes. Both are keg-only,
+so both need linking or a PATH entry.
+
+| | `libpq` 18.6 | `postgresql@18` 18.6 |
+|---|---|---|
+| Gives you | `psql`, `pg_dump`, `pg_restore`, `pg_isready` | all of that **plus** the server |
+| Runs a database locally | no | yes, with a data directory and a `brew services` entry |
+| Disk | small | larger, plus whatever the data directory grows to |
+| Maintenance | none | initdb, version upgrades, a service to remember |
+
+**Recommendation: `libpq`.** It is the client set, which is exactly what "agents
+need to interact with a database" means. Nothing in `~/Code` currently runs a
+local Postgres: no `docker-compose.yml` references one, and the marshal project
+uses Supabase, which is hosted. Installing the full server would add a service to
+manage for a database that does not exist yet.
+
+If you would rather have the server on hand, `postgresql@18` is the one to take
+(18 is current; `postgresql@17` is the previous major). Say which and I will
+declare it either way.
+
+Either way **`pgreload` and `pgst` still go**: both call `pg_ctl`, which is a
+*server* control command and is not in `libpq`. What you get back is `psql`, which
+is the one you would actually use.
 
 ### Is there a maintained successor to `.macos`?
 
@@ -652,16 +692,25 @@ Proposing `asdf uninstall` for both. About 400 MB.
 
 **Declared but not installed (4):** `aws-sam-cli`, `fd`, `httpie`, `tesseract`.
 
-- **`aws-sam-cli` — remove from the manifest** per the round-two answer above. No
-  SAM projects exist and none ever have.
+- **`aws-sam-cli` — remove from the manifest. Confirmed in round three.** No SAM
+  projects exist and none ever have.
 - **`fd` and `httpie` — install them.** Both are referenced by other parts of this
   plan (`httpie` is what replaces the six uppercase HTTP aliases in row 19), so
   declaring them and leaving them uninstalled is the incoherent state.
-- **`tesseract` — needs a yes/no.** OCR engine, 
-  and nothing in the repo or in `~/Code` references it. It may have been declared
-  for a receipt or document-scanning idea that never happened. *Default: drop it,*
-  and note that the recipe-corpus project would want it back if PDF and photo
-  conversion becomes real.
+- **`tesseract` — needs a yes/no.** It is Google's open-source **OCR engine**:
+  point it at an image or a scanned PDF and it returns the text. `tesseract
+  receipt.jpg out` writes `out.txt`. It is the standard free alternative to
+  commercial OCR, and it is what most "extract text from a photo" pipelines call
+  underneath.
+
+  Nothing in the repo or in `~/Code` references it, and it is declared but never
+  installed, so it has done nothing here. It was probably declared for a
+  document-scanning idea that did not happen. *Default: drop it.*
+
+  **The one reason to keep it:** the recipe-corpus project is explicitly about
+  converting recipe PDFs and photographs to Cooklang, and OCR is the first step of
+  that pipeline. If that project is close, leave it declared; if it is a someday,
+  drop it and reinstall in one command when the time comes.
 
 **Declared, satisfied by something else (3):** `jq` resolves to `/usr/bin/jq`,
 macOS's own copy. `delta` and `openssl` are Homebrew *aliases* for `git-delta` and
@@ -750,11 +799,11 @@ the LiteLLM stack).
   referenced anywhere in the repo. Cheap to keep, worth confirming you use them.
 - **`bun` (60 MB)** — a leaf, so deliberately installed, but nothing in `~/Code`
   or the repo references it and node owns the runtime story here.
-- **`redis-stack-server`** — not a formula, but flagged from the redis answer
-  above: the installed version is **7.2.0-v3 from October 2023**, and Redis 8
-  folded the Stack modules into core Redis, so the separate Stack distribution is
-  a dead branch. Worth deciding whether to move to plain `redis` plus the modules
-  you actually use.
+- **`redis-stack-server`** — not a formula, and no longer a question. Round three
+  settled it: the installed cask is **7.2.0-v3 from October 2023**, Redis Stack
+  maintenance ended **December 2025**, and Redis 8 ships all the Stack modules in
+  core. **Replace it with `brew install redis`** and drop the cask. See the redis
+  answer above.
 
 **Confirmed-good, mentioned so they are not re-litigated:** `deno` is not a leaf;
 it is a dependency of `yt-dlp`, which is why it appeared installed despite you
@@ -894,9 +943,15 @@ every `?` in Stages 2 and 3 now has a decision.
 
 Three things still need you, none of them blocking:
 
-**A. `tesseract`** — declared, never installed, no reference anywhere. *Default:
-drop it.* The recipe-corpus project would want it back if PDF and photo
-conversion becomes real, which is the only reason to hesitate.
+**A. `tesseract`** — OCR engine; declared, never installed, referenced nowhere.
+*Default: drop it.* The only reason to hesitate is the recipe-corpus project,
+which needs OCR as the first step of converting recipe photos and PDFs to
+Cooklang. Close project: keep. Someday project: drop, and reinstall in one
+command.
+
+**A2. Postgres shape** — `libpq` (client only) or `postgresql@18` (client plus a
+local server). *Default: `libpq`,* since nothing here runs a local Postgres today
+and the marshal project uses hosted Supabase.
 
 **B. Stage 5.3's new candidates.** `grc` (proven unwired), `jid`, `tmux`, `htop`,
 `bun`, and the three-year-old `redis-stack-server`. That is a walkthrough, not a
