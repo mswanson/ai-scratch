@@ -100,4 +100,6 @@ Make `make bootstrap` on a fresh machine reproduce the framework machine setup (
 
 (Owner: more items to come.)
 
+- [ ] **Alfred setup script — owner request, 2026-08-25.** Alfred is installed and declared but under-used; owner wants to take full advantage of it. Write a `scripts/setup-alfred.sh` that reproduces the configuration on a fresh machine. Worth scoping first: Alfred keeps preferences in a syncable folder (`Alfred.alfredpreferences`), which can be pointed at Dropbox or tracked here directly, so the script may be mostly "set the sync folder and let Alfred restore" rather than scripting individual settings. Powerpack features (workflows, snippets, clipboard history, file actions) are where the leverage is. Decide whether the preferences bundle is tracked in this repo or synced through Dropbox, since it can contain API keys inside workflows.
+
 - [ ] Note from the 2026-08-02 manage-planning-repos redline (c12): machine-level qmd setup (binary + launchd + MCP registration) is dotfiles' job — §4 items above cover it; per-repo qmd COLLECTIONS stay out of dotfiles, they're created by manage-planning-repos Setup per repo.
