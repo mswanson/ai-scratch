@@ -2,7 +2,7 @@
 date: 2026-08-21
 topic: forge-skills script-conversion PRs — finish closeout and merge
 repos: [ai-scratch, forge-skills]
-status: open
+status: resolved
 ---
 
 ## Authoritative context

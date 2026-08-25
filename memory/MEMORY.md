@@ -17,4 +17,5 @@
 - [Claude Code settings scopes](claude-settings-scopes.md) — no user-scope settings.local.json; model/effortLevel churn the tracked settings.json by design
 - [LiteLLM local adapter](handoffs/2026-08-08-litellm-local-adapter.md) — Claude Code ↔ local models, on-demand; built and verified, untested in real use
 - [Skill dedup and branch merge](handoffs/2026-08-08-skill-dedup-and-branch-merge.md) — `handoff` skill removed for `write-handoff`; never squash/rebase hub PRs (memory cites SHAs)
+- [forge-skills PR wrap-up](handoffs/2026-08-25-forge-skills-pr-wrapup.md) — #4 merge-ready (scrubbed); post-merge sweep, worktree cleanup, 82-item ledger; supersedes the 2026-08-21 closeout
 - [Handoffs](handoffs/)
