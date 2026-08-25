@@ -19,6 +19,7 @@
 - [Skill dedup and branch merge](handoffs/2026-08-08-skill-dedup-and-branch-merge.md) — `handoff` skill removed for `write-handoff`; never squash/rebase hub PRs (memory cites SHAs)
 - [BMAD 6.11 upgrade plan](handoffs/2026-08-21-bmad-6-11-upgrade-plan.md) — research done; Option B trial PASSED; skill work queued behind the forge-skills PR merges
 - [forge-skills PR wrap-up](handoffs/2026-08-25-forge-skills-pr-wrapup.md) — #4 merge-ready (scrubbed); post-merge sweep, worktree cleanup, 82-item ledger; supersedes the 2026-08-21 closeout
+- [Recipe corpus project](../_bmad-output/planning-artifacts/2026-08-25-recipe-corpus-project.md) — collect recipes to Cooklang, repo of .cook files, capture skill; cookcli already installed
 - [Local RAG and tuning scope](../_bmad-output/planning-artifacts/2026-08-25-local-rag-and-tuning-scope.md) — qmd is already a working local RAG; LiteLLM :4000 is the seam for eval tools; MLX not PyTorch for tuning on M1 Max
 - [Saved-reading agent idea](../_bmad-output/planning-artifacts/2026-08-25-saved-reading-agent-idea.md) — owner wants an agent to read and summarize Pinboard pins + read-later backlog; unscoped, start by counting the pins
 - [Handoffs](handoffs/)
