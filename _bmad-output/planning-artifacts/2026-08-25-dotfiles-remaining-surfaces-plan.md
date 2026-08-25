@@ -1,6 +1,6 @@
 # Dotfiles: Remaining Surfaces — Full Audit and Execution Plan
 
-**Status: reviewed 2026-08-25, decisions folded in.** Every file outside `lib/`
+**Status: reviewed twice on 2026-08-25, both rounds folded in.** Every file outside `lib/`
 has been read. Every proposed change is named by file and line, every removal
 carries its reason, and every question you raised in review is answered below or
 listed as still-open with a default.
@@ -36,6 +36,22 @@ Baseline: dotfiles `main` at `84b7294`, `make doctor` passing all 30 checks.
 | "give me the commands to run" | Manual steps | Copy-paste block at the end. |
 | "add a plan for this" | Bootstrap reproducibility | Separate plan, written as a companion. |
 | "should dotfiles be a monorepo?" | Stage 6 | Open question, framed below. |
+
+### Round two
+
+| Your comment | Decision |
+|---|---|
+| "Cut nombom" | Cut, not fixed. Row 8. |
+| "for redis and postgres do we need to install them to run locally? the CLIs are critical for agents" | Reverses rows 11-12. Answered below; both aliases stay and the CLIs get installed. |
+| "keep brewi, brewui, brewf, kill the other 3" | Row 16 split. |
+| "keep setopt-list setopt-reset" / "kill dockspace" / "kill `c`, `map`" | Rows 23, 24, 26, 27 settled. |
+| "awscli is still in use but I don't need the alias, an agent runs the commands" | Row 29 cut. Starship `[aws]` still enabled; see below. |
+| "keep the sudo, keep status" | Both enabled. |
+| "hostname can go" | Removed from the block set and from `format`. |
+| "use a sensible default for directory truncation" | `truncation_length = 3`. |
+| "we should audit the installed packages" | New Stage 5.3, groundwork already done. |
+| "no I don't" (swimtopia Ruby / bluegriffin PHP) | Q1 closed. asdf stays at two plugins. |
+| "what is the difference between awscli and aws-sam-cli?" | Answered below. `aws-sam-cli` comes off the manifest. |
 
 ---
 
@@ -101,6 +117,72 @@ The other 63 in `Brewfile.fonts` are Google Fonts casks (abeezee, advent-pro,
 amiri, barlow and its variants, and so on). None are installed, and with
 Workspace serving fonts from the web there is nothing to install them for. See
 Stage 5.2 for the proposal.
+
+### awscli vs aws-sam-cli, and do you need both?
+
+Different scopes, and only one of them is yours.
+
+**`awscli`** is the general-purpose AWS CLI v2. Every service, every API:
+`aws s3 cp`, `aws sts get-caller-identity`, `aws sso login`. It is installed, it
+is 200 MB, and `aws configure list-profiles` returns two real profiles
+(`mswanson`, `1524-devops`), so it is genuinely in use.
+
+**`aws-sam-cli`** is a narrow tool for one thing: the Serverless Application
+Model. It builds Lambda functions, runs them locally in Docker (`sam local
+invoke`), and deploys the CloudFormation stack behind them. It only does anything
+in a directory containing a `template.yaml` and a `samconfig.toml`.
+
+**You have no SAM projects.** I searched `~/Code` for `template.yaml`,
+`template.yml` and `samconfig.toml` and found none, and no `package.json`
+anywhere references `aws-lambda` or `serverless`. It is also declared but not
+installed, so nothing has ever run it here.
+
+**Recommendation: drop `aws-sam-cli` from `Brewfile.cli`.** It is a 
+serverless-specific tool with no serverless work to do. Keep `awscli`. If Lambda
+work starts later, one `brew install` restores it.
+
+### Do redis and postgres need to be installed to run locally?
+
+You framed this exactly right: the GUIs are for you, the CLIs are for agents. The
+answer differs between the two.
+
+**Redis: the CLIs already exist on this machine, just not on PATH.** The
+`redis-stack-server` cask ships `redis-cli`, `redis-server`, `redis-benchmark`
+and `redis-sentinel`, but it puts them in
+`/opt/homebrew/Caskroom/redis-stack-server/7.2.0-v3/bin/`, which is not a PATH
+directory. That is the real reason the `redis` and `rdserver` aliases have never
+worked. Nothing was missing; it was unreachable.
+
+Two ways to fix it, and I recommend the second:
+
+1. Add the Caskroom bin directory to PATH. Works, but the path contains the
+   version number, so it breaks on every cask upgrade.
+2. **`brew install redis`.** The formula puts `redis-cli` and `redis-server` in
+   `/opt/homebrew/bin` where everything finds them, and it can run as a brew
+   service. The cask keeps serving the Stack modules (search, JSON, timeseries)
+   for the GUI.
+
+One thing to flag while we are here: **the installed `redis-stack-server` cask is
+from October 2023, version 7.2.0-v3.** Redis 8 folded the Stack modules into core
+Redis, so the separate Stack distribution is effectively a dead branch. Worth a
+look during Stage 5.3, though it is doing its job today.
+
+**Postgres: nothing is installed at all.** No `psql`, no `pg_ctl`, no `pg_dump`
+anywhere on the machine. Beekeeper Studio bundles its own driver and exposes no
+CLI. So unlike redis, this genuinely needs an install.
+
+Recommendation: **`brew install libpq`** and link it. That is the Postgres
+*client* set (`psql`, `pg_dump`, `pg_restore`) with no server, which is what an
+agent talking to a remote or containerised database needs. Installing the full
+`postgresql@17` formula would also give you a local server, a data directory, and
+a launchd service you would then have to manage.
+
+That choice decides row 12: `pgreload` and `pgst` both call `pg_ctl`, which is a
+*server* control command and is not in `libpq`. So those two aliases go regardless;
+what you get back is `psql` for actually querying.
+
+**Neither is urgent.** No `docker-compose.yml` in `~/Code` references redis or
+postgres, so nothing is currently blocked on this.
 
 ### Is there a maintained successor to `.macos`?
 
@@ -349,11 +431,11 @@ it — these are the ones your "copy/pasted cruft" instinct is about).
 | 5 | `clean_ds_store` | `cli-utils.sh:84` and `:91` | Defined twice, identically. | **FIX** — delete the second |
 | 6 | `ifactive` | `network-utils.sh:11` | Needs `pcregrep`, not installed. | **FIX** per your review — `ifconfig \| grep -B4 "status: active"` |
 | 7 | `undopush` | `dev-utils.sh:6` | Force-pushes to `master`; every repo here uses `main`. | **FIX** per your review — default to current branch, accept an optional branch arg |
-| 8 | `nombom` | `dev-utils.sh:18` | Calls `rm -rf`, which hits your own `rm()` guard and prompts. Verified: `whence -w rm` returns `function`. | **FIX** — `command rm -rf` |
+| 8 | `nombom` | `dev-utils.sh:18` | Calls `rm -rf`, which hits your own `rm()` guard and prompts. Verified: `whence -w rm` returns `function`. | **CUT** per round two |
 | 9 | `sniff` | `network-utils.sh:23` | Needs `ngrep`, not installed. Found during this audit. | **CUT** |
 | 10 | `httpdump` | `network-utils.sh:24` | Hardcodes `en1`; your primary interface is `en0`. Verified. | **CUT** — see note below |
-| 11 | `redis`, `rdserver` | `dev-utils.sh:25-26` | `redis-cli`/`redis-server` not on PATH. The `redis-stack-server` cask installs to `/Applications` and adds neither. Never worked here. | **CUT** |
-| 12 | `pgreload`, `pgst` | `dev-utils.sh:28-29` | `pg_ctl` not installed; every Postgres CLI was removed this session. | **CUT** |
+| 11 | `redis`, `rdserver` | `dev-utils.sh:25-26` | `redis-cli`/`redis-server` are not on PATH. Corrected in round two: the cask **does** ship them, at `/opt/homebrew/Caskroom/redis-stack-server/7.2.0-v3/bin/`, which is not a PATH directory. | **KEEP** — `brew install redis` puts both in `/opt/homebrew/bin`. See the answer above |
+| 12 | `pgreload`, `pgst` | `dev-utils.sh:28-29` | `pg_ctl` not installed, and it is a *server* control command that `libpq` does not carry. | **CUT** — but `brew install libpq` gets you `psql`, which is what agents actually need. See the answer above |
 | 13 | `cc` | `dev-utils.sh:34` | Hardcoded `/Users/michaelswanson/...` path. | **CUT** per your review |
 
 On #9 and #10: both are packet-capture tools for watching plaintext HTTP, which
@@ -368,20 +450,21 @@ These are what your "copy/pasted from other places" instinct was pointing at.
 |---|---|---|---|---|
 | 14 | `diskspace_report`, `free_diskspace_report` | macOS-utils | `df -P -kHl`, and an alias to the alias | **CUT both.** You named this one. `df -h` is shorter and you already know it |
 | 15 | `bubo`, `bubc`, `bubu` | cli-utils | update+outdated, upgrade+cleanup, both | **CUT.** You named `bubo`. The phased-upgrade plan exists precisely because blanket `brew upgrade` is not what you want |
-| 16 | `brewi`, `brewui`, `brewri`, `brewf`, `brewq`, `brewd` | cli-utils | 6 aliases saving 2-4 characters each on `brew install/uninstall/reinstall/info/search/doctor` | **CUT all 6.** They save less than they cost to remember, and `brew` has completion |
+| 16 | `brewi`, `brewui`, `brewf` | cli-utils | `brew install`, `brew uninstall`, `brew info` | **KEEP** per round two — you use these |
+| 16b | `brewri`, `brewq`, `brewd` | cli-utils | `brew reinstall`, `brew search`, `brew doctor` | **CUT** per round two |
 | 17 | `brews`, `casks`, `brservices`, `brtidy`, `bruse`, `brdeps` | cli-utils | list formulae/casks with versions, services, autoremove+cleanup, uses, deps | **KEEP.** These wrap flag combinations worth not retyping. Different class from #16 |
-| 18 | `rsync-copy`, `rsync-move`, `rsync-update`, `rsync-sync` | cli-utils | 4 rsync flag sets | **?** Dropbox is gone and Google Drive syncs itself. If you have not run rsync this year, cut all four |
+| 18 | `rsync-copy`, `rsync-move`, `rsync-update`, `rsync-sync` | cli-utils | 4 rsync flag sets | **CUT all 4** (default, unchallenged in round two). Dropbox is gone and Google Drive syncs itself |
 | 19 | `GET`/`HEAD`/`POST`/`PUT`/`DELETE`/`OPTIONS` | network-utils | 6 uppercase aliases wrapping `lwp-request` | **CUT.** They do resolve (Perl's libwww ships with macOS), but `httpie` is declared for this job and six single-word uppercase aliases is a lot of global namespace |
 | 20 | `chromekill` | app-utils | Kills Chrome renderer processes | **CUT.** Chrome's own task manager (Window → Task Manager) does this with a UI |
-| 21 | `fs` | cli-utils | `stat -f "%z bytes"` | **?** `ls -lh` covers it |
+| 21 | `fs` | cli-utils | `stat -f "%z bytes"` | **KEEP** (default, unchallenged in round two) |
 | 22 | `ismember` | cli-utils | `dseditgroup -o checkmember -m` | **CUT.** Directory-services group check; niche even for admin work |
-| 23 | `setopt-list`, `setopt-reset` | cli-utils | zsh option introspection | **?** Useful when debugging shell config, invisible otherwise |
-| 24 | `dockspace` | macOS-utils | Adds a Dock spacer tile | **?** Run once per machine, if ever |
+| 23 | `setopt-list`, `setopt-reset` | cli-utils | zsh option introspection | **KEEP** per round two |
+| 24 | `dockspace` | macOS-utils | Adds a Dock spacer tile | **CUT** per round two |
 | 25 | `hidedesktop`, `showdesktop` | macOS-utils | Toggle desktop icons for presenting | **KEEP** if you present from this machine, else cut the pair |
-| 26 | `c` | cli-utils | `tr -d '\n' \| pbcopy` | **?** Single-letter alias for a pipe target |
-| 27 | `map` | cli-utils | `xargs -n1` | **?** |
+| 26 | `c` | cli-utils | `tr -d '\n' \| pbcopy` | **CUT** per round two |
+| 27 | `map` | cli-utils | `xargs -n1` | **CUT** per round two |
 | 28 | `gurl` | network-utils | `curl --compressed` | **CUT.** curl negotiates compression by default for most servers now |
-| 29 | `awswho`, `awslogin`, `awsprofiles`, `awsregion` | dev-utils | identity, SSO login, profile list, region | **?** Your review said "kill them" about the *commented* profile-switchers, which are gone. These four are live and `awscli` is installed. Confirm whether AWS is still in play at all |
+| 29 | `awswho`, `awslogin`, `awsprofiles`, `awsregion` | dev-utils | identity, SSO login, profile list, region | **CUT all 4** per round two. AWS is still in use (two configured profiles), but an agent runs the commands and does not read your aliases |
 
 ### 2.3 Keeping, no action
 
@@ -401,8 +484,12 @@ Antigen is gone; the file is `~/.zsh_plugins.txt`, tracked at
 
 ### 2.5 Net effect
 
-If every CUT lands and the `?` rows go too: 62 aliases to roughly 30, with five
-repairs. If only the CUTs land: 62 to about 38.
+Every row is now decided. **62 aliases down to 31**, with five repairs
+(`ps`→`psa`, `urlencode`, `sshkey`, `clean_ds_store`, `ifactive`, `undopush`) and
+two new brew installs (`redis`, `libpq`) that make rows 11 and 12 mean something
+for the first time.
+
+No `?` rows remain, so Stage 2 needs no further input.
 
 ---
 
@@ -423,12 +510,12 @@ Checked every disabled module against what is actually installed.
 | Module | Tool present? | Recommendation |
 |---|---|---|
 | `docker_context` | `docker` **yes** | **ENABLE.** You named this. Shows the active Docker context, which matters once you are running local model containers |
-| `aws` | `aws` **yes** | **ENABLE if AWS is still live** (ties to alias row 29). Shows profile and region, which is the thing SSO sessions make easy to lose track of |
-| `kubernetes` | `kubectl` **yes** | **?** `kubectl` is installed but nothing else here suggests active cluster work. Enabling it is cheap and it renders only inside a kube context |
-| `sudo` | n/a | **?** Renders a marker while sudo credentials are cached. Genuinely useful, unrelated to any toolchain |
-| `status` | n/a | **?** Shows the exit code of the last command. Many people consider this the single most useful non-default module |
-| `jobs` | n/a | **?** Count of backgrounded jobs. Useful if you use `bg`/`fg` |
-| `deno` | `deno` yes | **LEAVE DISABLED.** You said you do not use it; it is present only as a dependency |
+| `aws` | `aws` **yes** | **ENABLE.** AWS is confirmed live: two configured profiles. You cut the aliases because an agent runs the commands, but the prompt segment is for you, and profile/region drift is exactly what SSO sessions make easy to lose track of |
+| `sudo` | n/a | **ENABLE** per round two. Renders a marker while sudo credentials are cached |
+| `status` | n/a | **ENABLE** per round two. Shows the exit code of the last command |
+| `kubernetes` | `kubectl` **yes** | **LEAVE DISABLED** (default, unchallenged). `kubectl` is installed but nothing here suggests active cluster work |
+| `jobs` | n/a | **LEAVE DISABLED** (default, unchallenged) |
+| `deno` | `deno` yes | **LEAVE DISABLED.** Confirmed: `brew uses --installed deno` shows it is a **dependency of `yt-dlp`**, not something you chose |
 | `java` | `java` yes | **LEAVE DISABLED.** System JDK, not your work |
 | `rust`, `dart`, `php`, `elixir`, `terraform`, `helm`, `pulumi`, `gcloud`, `azure`, `conda`, `nix_shell`, `vagrant`, and 30+ others | **no** | **CUT.** Tool not installed and language not present in `~/Code` |
 
@@ -448,11 +535,11 @@ word if either should come back instead.
 
 | Module | Currently | Note |
 |---|---|---|
-| `username` | enabled, `show_always = true` | Renders your username on every prompt, on a single-user laptop. **Recommend disabling** unless you like it |
-| `hostname` | enabled, `ssh_only = false` | Same: renders on every local prompt. `trim_at = ".companyname.com"` is a placeholder that was never customised. **Recommend `ssh_only = true`**, so it appears when it actually tells you something |
-| `git_commit` | enabled, `only_detached = true` | Correct as configured; shows the hash only in detached HEAD |
-| `git_metrics` | enabled | `+added/-deleted` line counts on every prompt in a repo. **?** Some find this noise |
-| `directory` | `truncation_length = 100` | Effectively no truncation. Fine, but deep paths will wrap |
+| `hostname` | enabled, `ssh_only = false` | **REMOVE** per round two ("hostname can go"). Block deleted and `$hostname` dropped from `format`. That also retires the `trim_at = ".companyname.com"` placeholder nobody ever customised |
+| `username` | enabled, `show_always = true` | **DISABLE** (default, unchallenged). Renders your username on every prompt of a single-user laptop |
+| `directory` | `truncation_length = 100` | **CHANGE to 3** per round two. That is starship's own default and the sensible one: the last three path components, with the existing `truncation_symbol = "…/"` marking the elision. At 100 there is effectively no truncation, so a deep monorepo path pushes the rest of the prompt off-screen |
+| `git_commit` | enabled, `only_detached = true` | **KEEP.** Correct as configured; hash only in detached HEAD |
+| `git_metrics` | enabled | `+added/-deleted` counts on every prompt in a repo. **KEEP** (default, unchallenged) |
 | `nodejs`, `python`, `git_branch`, `git_state`, `cmd_duration` | enabled | **KEEP** all five |
 
 ### 3.3 `[git_status]` — the icons
@@ -490,10 +577,22 @@ it is too loud.
 
 ### 3.4 Net effect
 
-269 lines to roughly 95: the ten live modules, plus `docker_context`, plus a
-configured `git_status`, plus whatever you enable from the `?` rows. Both dead
-lists are replaced with a three-line comment stating the rule (a module renders
-only if `format` names it) and pointing at `starship.rs/config`.
+**269 lines to roughly 90.** The prompt ends up with these segments:
+`directory`, the five git modules (`branch`, `commit`, `state`, `metrics`, and a
+newly-configured `status`), `nodejs`, `python`, `docker_context`, `aws`, `sudo`,
+`status`, `cmd_duration`, `character`.
+
+Gone from the prompt: `username` (disabled) and `hostname` (deleted outright).
+`package` stays disabled per the explanation above.
+
+Both dead lists are replaced with a three-line comment stating the rule (a module
+renders only if `format` names it) and pointing at `starship.rs/config`.
+
+**One thing to watch.** That is five segments added against two removed, so the
+prompt gets busier rather than simpler. Four of the five render only when they
+have something to say, so a plain directory should be shorter than today; a dirty
+repo on an AWS profile inside a Docker context will be noticeably longer. Worth
+living with for a few days before tuning.
 
 ---
 
@@ -552,10 +651,17 @@ Proposing `asdf uninstall` for both. About 400 MB.
 **Reconciled against reality before the walkthrough**, so this starts from facts.
 
 **Declared but not installed (4):** `aws-sam-cli`, `fd`, `httpie`, `tesseract`.
-Legitimate manifest entries if you want them on a rebuild, which is the standing
-rule. Worth a yes/no each. Note `fd` and `httpie` are both referenced by other
-parts of this plan (`httpie` as the replacement for the uppercase HTTP aliases),
-so declaring-and-installing them is the coherent choice if you keep those.
+
+- **`aws-sam-cli` — remove from the manifest** per the round-two answer above. No
+  SAM projects exist and none ever have.
+- **`fd` and `httpie` — install them.** Both are referenced by other parts of this
+  plan (`httpie` is what replaces the six uppercase HTTP aliases in row 19), so
+  declaring them and leaving them uninstalled is the incoherent state.
+- **`tesseract` — needs a yes/no.** OCR engine, 
+  and nothing in the repo or in `~/Code` references it. It may have been declared
+  for a receipt or document-scanning idea that never happened. *Default: drop it,*
+  and note that the recipe-corpus project would want it back if PDF and photo
+  conversion becomes real.
 
 **Declared, satisfied by something else (3):** `jq` resolves to `/usr/bin/jq`,
 macOS's own copy. `delta` and `openssl` are Homebrew *aliases* for `git-delta` and
@@ -611,9 +717,53 @@ fixes a real fresh-machine gap.
 If you would rather keep the 63 as a record, say so and they stay as a commented
 block under the same rule as the Brewfile wishlists.
 
-### 5.3 The phased upgrade — 53 outdated packages
+### 5.3 Audit what is actually installed
 
-Independent of every stage here. Three passes, verified separately:
+New, from round two: "we should audit the installed packages to see if I actually
+need all of them." Stage 5.1 audits what is *declared*; this audits what is
+*installed*, which is the different and better question.
+
+Scope: the **45 `brew leaves`** entries, meaning top-level installs you asked for
+rather than dependencies pulled in behind them. Same section-by-section
+walkthrough as the apps audit.
+
+Groundwork is done, so the walkthrough starts from evidence rather than guesses:
+
+**Justified, no discussion needed.** The three largest unexplained entries turned
+out to be one project's toolchain: `supabase` (155 MB), `auth0` (58 MB), and
+`openfga` + `fga` (85 MB) are all referenced by `marshal/cool-story`, in its
+`package.json` and its `deploy/local/*.env.example`. That is 298 MB with a clear
+owner. Same for `awscli` (200 MB, two live profiles) and `ollama` (47 MB, behind
+the LiteLLM stack).
+
+**Already marked for removal in 5.1:** `lua`, `unbound`, `rtmpdump`.
+
+**New candidates found while gathering this:**
+
+- **`grc` (436 KB)** — a command-output colorizer that does nothing until you wrap
+  commands in it. Grepped the entire repo: **no alias, function, or config
+  references it.** It has never been wired up. This is the one you asked about
+  early in the session; the answer is that it is inert.
+- **`jid` (3.6 MB)** — interactive JSON digger. You have `jq` and `fzf`, which
+  cover the same ground together. Worth a look.
+- **`tmux` (1.4 MB)** and **`htop` (432 KB)** — both small, both classic, neither
+  referenced anywhere in the repo. Cheap to keep, worth confirming you use them.
+- **`bun` (60 MB)** — a leaf, so deliberately installed, but nothing in `~/Code`
+  or the repo references it and node owns the runtime story here.
+- **`redis-stack-server`** — not a formula, but flagged from the redis answer
+  above: the installed version is **7.2.0-v3 from October 2023**, and Redis 8
+  folded the Stack modules into core Redis, so the separate Stack distribution is
+  a dead branch. Worth deciding whether to move to plain `redis` plus the modules
+  you actually use.
+
+**Confirmed-good, mentioned so they are not re-litigated:** `deno` is not a leaf;
+it is a dependency of `yt-dlp`, which is why it appeared installed despite you
+saying you do not use it.
+
+### 5.4 The phased upgrade — 53 outdated packages
+
+Runs after 5.3, so nothing gets upgraded that is about to be removed. Three
+passes, verified separately:
 
 1. Security and network: `openssl@3`, `ca-certificates`, `curl`, `gnupg`,
    `libnghttp2`, `libssh2`, `p11-kit`, `pinentry`.
@@ -737,27 +887,25 @@ than restating the diff.
 
 ## Still open
 
-Four, each with a default so approval alone is enough to proceed.
+**Round two closed all four.** Q1 answered "no I don't" (no swimtopia Ruby, no
+bluegriffin PHP), so asdf stays at two plugins. Q2 answered: AWS is live but the
+aliases go and the prompt module stays. Q3 and Q4 were answered row by row, and
+every `?` in Stages 2 and 3 now has a decision.
 
-**Q1. asdf plugins: do you still work in the swimtopia Ruby repos or the
-bluegriffin PHP client work?** *Default: no, keep the two-plugin setup as is.*
-Either way I will uninstall the two stale runtime versions.
+Three things still need you, none of them blocking:
 
-**Q2. Are the four live AWS aliases still in play?** Your "kill them" was against
-the commented profile-switchers, now gone. `awscli` and `aws-sam-cli` are declared
-and the `[aws]` starship module hangs off the same answer. *Default: keep the four
-aliases, enable the starship module.*
+**A. `tesseract`** — declared, never installed, no reference anywhere. *Default:
+drop it.* The recipe-corpus project would want it back if PDF and photo
+conversion becomes real, which is the only reason to hesitate.
 
-**Q3. Alias table `?` rows** (18, 21, 23, 24, 26, 27 in Stage 2.2). Six judgment
-calls I cannot make for you: the rsync set, `fs`, the setopt pair, `dockspace`,
-`c`, `map`. *Default: cut the rsync set, keep the rest.* Rsync had a clear purpose
-under Dropbox and none now; the others are cheap.
+**B. Stage 5.3's new candidates.** `grc` (proven unwired), `jid`, `tmux`, `htop`,
+`bun`, and the three-year-old `redis-stack-server`. That is a walkthrough, not a
+question, and it happens when Stage 5 runs. Nothing needed from you first.
 
-**Q4. Starship `?` rows** (`kubernetes`, `sudo`, `status`, `jobs`, plus whether
-`username`/`hostname`/`git_metrics` stay on). *Default: enable `status` and
-`sudo`, leave `kubernetes` and `jobs` off, set `hostname` to `ssh_only = true`,
-and disable `username`.* That trims two always-on segments and adds two that only
-appear when they have something to say.
+**C. Monorepo structure**, raised in your first review and framed in Stage 6.
+Deferred to its own conversation, deliberately.
+
+Everything else in this plan can run unattended.
 
 ---
 
