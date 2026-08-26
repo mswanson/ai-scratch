@@ -1,5 +1,11 @@
 # Dotfiles: Bootstrap Reproducibility — Plan
 
+**Status: EXECUTED 2026-08-26**, commits `54755bc` and `1ab7365` on dotfiles
+`main`. All seven gaps closed; `make bootstrap` went from 8 steps to 12 and
+`make doctor` gained an Agent Toolchain section that checks every one of them.
+The real test (a clean `$HOME`) has not been run; see *What is verified* at the
+end.
+
 Requested in review of the cleanup plan, 2026-08-25. This is the gap that plan
 kept deferring: `make bootstrap` sets up a shell and a package list, and nothing
 else. Everything built on this machine since roughly 2026-06 was installed by
@@ -256,3 +262,51 @@ whether `mlx-lm` and `promptfoo` land here later.
   pattern that item 5 wants for `LITELLM_MASTER_KEY`.
 - `memory/bmad-loop-pins.md` — the `bmad-loop` version pin item 2 must carry.
 - `memory/qmd-index-registry.md` — why the qmd index is disposable, item 7.
+
+
+---
+
+## What was built
+
+| Gap | Closed by |
+|---|---|
+| 1. `@tobilu/qmd` undeclared | one line in `default-npm-packages.sh` |
+| 2. `uv` tools undeclared | `default-uv-tools.sh` + `install-uv-tools.sh` + `make install-uv` |
+| 3. Skills unreproducible | 8 gws skills registered via the Skills CLI; `setup-skills.sh` for the forge-skills symlinks and the lockfile |
+| 4. MCP registrations | `config/claude/mcp-servers.json` + `setup-mcp-servers.sh` + `make setup-mcp` |
+| 5. LiteLLM `.env` | scaffolded by `setup-local-services.sh`, never overwriting an existing one |
+| 6. Local models | `config/models.txt` + `pull-models.sh` + `make models`, deliberately outside bootstrap |
+| 7. qmd index | `qmd update && qmd embed` in `setup-local-services.sh` |
+| 9. doctor coverage | an Agent Toolchain section covering all of the above |
+
+## What is verified, and what is not
+
+**Verified by actually breaking it:** deleting a forge-skills symlink and a
+locked third-party skill, then restoring both with `setup-skills.sh`.
+Unregistering an MCP server and confirming `make doctor` fails, then
+re-registering. Both MCP transports registered against throwaway servers and
+removed. `uv tool install` with the corrected git spec.
+
+**Not verified:** the whole thing on a clean `$HOME`. Every script was exercised
+against a machine that already had most of what it installs, which tests the
+idempotent path far better than the install path. The plan's own
+recommendation still stands and is now the single highest-value follow-up:
+create a throwaway user account on this machine, clone dotfiles, and run
+`make bootstrap`. That account shares Homebrew and the OS but gets a clean
+`$HOME`, which is where every one of these seven gaps lived.
+
+## Discovered while executing
+
+**`bmad-loop` is not on PyPI**, which the plan assumed. `uv tool install
+bmad-loop==0.9.1` fails with "not found in the package registry". It ships from
+git with a `[tui]` extra, and the authoritative spec for any installed uv tool
+is in `~/.local/share/uv/tools/<name>/uv-receipt.toml`. The tool list carries
+the full git spec and a comment pointing at that file.
+
+**The Skills CLI's `-s` flag takes one skill per invocation.** A comma-separated
+list is silently rejected with "No matching skills found", including for names
+printed in the tool's own listing two lines earlier.
+
+**`googleworkspace/cli` carries 95 skills**, not the 8 on this machine. Only the
+8 were installed, so nothing new appeared, but the other 87 are there if the
+Workspace tooling gets used more.
