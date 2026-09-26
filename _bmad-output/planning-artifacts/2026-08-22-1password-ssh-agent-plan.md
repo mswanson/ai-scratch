@@ -132,3 +132,38 @@ Stage 1 rollback is the important one, and it is two config lines. Nothing is de
 - **Track `~/.ssh/config` in dotfiles?** It is currently untracked, so this change would not reproduce on a new machine. The config itself holds no secrets. The counter-argument is that `.ssh/` is a directory where an accidental `git add` is expensive — the old `install.conf.yaml` even carries a commented-out TODO about symlinking into `.ssh`, suggesting this was considered before and dropped.
 - **Do the unattended agent sessions commit?** If `bmad-loop` runs sign commits while you are away, Stage 1 will block them. Worth checking before starting, not after.
 - **Any non-GitHub hosts** using this key — servers, Tailscale nodes, deploy targets? The `Host *` block covers them, but each needs testing.
+
+## Test result, 2026-09-25: answers the unattended-commit blocker
+
+Throwaway repo signing through `op-ssh-sign` with a 1Password test key,
+commits run from detached tmux sessions the way bmad-loop launches them:
+
+| # | Condition | Result |
+|---|---|---|
+| 1 | attended, first use | signed after owner approval (12s) |
+| 2 | same shell, repeat | signed, no prompt (1s) |
+| 3 | detached tmux, new process | signed, no prompt (1s) |
+| 4 | 1Password locked | failed after ~60s: `1Password: failed to fill whole buffer`; no commit, nothing hung |
+| 5 | unlocked again, no re-approval | failed after ~60s, same error |
+
+Approval survives new processes but not a lock. After any lock (idle, sleep,
+screensaver) the next signature needs a human, and an unattended commit fails
+after a minute. So Stage 1 as written breaks bmad-loop runs that outlast a
+1Password lock.
+
+Recommendation: split the jobs. 1Password agent for GitHub SSH auth (push,
+pull; always attended). Commit signing stays on an on-disk key with a
+passphrase stored in the macOS keychain, loaded into the launchd ssh-agent,
+which signs unattended. That is the "honest middle option" above, applied to
+signing only.
+
+## Implemented 2026-09-25 (dotfiles `setup-ssh-keys.sh`, zshrc, doctor)
+
+The split landed on this machine. 1Password item "Github" is the GitHub
+authentication key (registered as "1Password GitHub"); the on-disk key has a
+keychain-stored passphrase and is registered for signing only. The old
+"Personal MBP" authentication entry was deleted from GitHub. Tests 6-8: empty
+agent makes signing wait on a passphrase (hangs in tmux, so the key must be
+loaded; zshrc does it); loaded key signs from detached tmux in 1s, including
+with 1Password locked. Stage 3 (rotation) is moot for auth; the signing key
+was not rotated.
