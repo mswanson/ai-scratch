@@ -51,7 +51,7 @@ There are no active overrides in this hub; document every new override file here
 
 ## Agent Routing
 
-- "implement / dev / build story X": the bmad-loop run flow — invoke `operate-bmad-loop` (tool pinned at v0.9.1; see `memory/bmad-loop-pins.md`)
+- "implement / dev / build story X": the bmad-loop run flow — invoke `operate-bmad-loop` (tool pinned at v0.12.0; see `memory/bmad-loop-pins.md`)
 
 ## Permissions
 
