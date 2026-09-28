@@ -167,3 +167,21 @@ agent makes signing wait on a passphrase (hangs in tmux, so the key must be
 loaded; zshrc does it); loaded key signs from detached tmux in 1s, including
 with 1Password locked. Stage 3 (rotation) is moot for auth; the signing key
 was not rotated.
+
+## Reverted 2026-09-27: 1Password out of the git path entirely
+
+Two days of use showed the auth half fails the same way signing did. Most
+pushes here happen from phone-driven remote sessions or bmad-loop runs; once
+1Password locks, the push blocks on a GUI prompt nobody remote can answer.
+Options weighed: on-disk key with keychain passphrase (chosen), HTTPS with the
+gh token (same exposure, broad scopes, every remote rewritten), 1Password set
+to never lock (worse posture), remote screen-share to unlock (a workaround,
+not a fix). No ssh-config fallback works because a locked 1Password blocks
+rather than fails.
+
+Final state: one key, `~/.ssh/id_ed25519`, passphrase in the keychain, loaded
+by zshrc into the launchd agent, registered on GitHub for authentication and
+signing. The github.com block pins `IdentityAgent SSH_AUTH_SOCK`. The
+"1Password GitHub" registration is deleted; the 1Password item is the owner's
+to delete. This is the plan's "honest middle option" as the end state, not
+a fallback. The 1Password SSH agent stays enabled but nothing in git uses it.

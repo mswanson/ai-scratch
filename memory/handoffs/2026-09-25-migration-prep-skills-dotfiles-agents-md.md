@@ -231,3 +231,15 @@ collections). Only `corex-webapp` had an AGENTS.md as of 2026-09-20.
   (other machines). Fresh-machine path of the new setup-ssh-keys.sh is untested;
   the UAT covers it (step 5 now prompts for a passphrase and pauses for
   1Password; `s` skips).
+
+## Update, 2026-09-27
+
+- SSH split REVERTED (dotfiles commit after `0026663`). Phone-driven remote
+  sessions could not push with 1Password locked. Final state: one on-disk key,
+  keychain passphrase, agent-loaded by zshrc, both GitHub registrations;
+  github.com block pins `IdentityAgent SSH_AUTH_SOCK`. "1Password GitHub"
+  deleted from GitHub; owner deletes the 1Password item. Details in the
+  1Password plan doc. Fresh-machine path still untested; UAT step 5 now has
+  no 1Password pause.
+- `docs/linear-workspace-blueprint.md` trashed: superseded by rev 3.2 in the
+  Orderly planning repo (`docs/linear-setup/`).
