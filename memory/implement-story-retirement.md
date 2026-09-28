@@ -19,9 +19,9 @@ follow-ups in deferred-work.md against code with one partial use.
 - Do not merge the retirement PR until story WP9 (`manage-planning-repos/hub-registry`) has merged:
   the WP9 session calls implement-story scripts through `~/.claude/skills/implement-story`, which
   resolves into the main forge-skills checkout.
-- After merging: pull forge-skills main, then `trash ~/.agents/skills/implement-story`,
-  `~/.claude/skills/implement-story`, `~/.codex/skills/implement-story` (dangling symlinks; the
-  dotfiles `update-skills.sh` mirror does not prune).
+- After merging: run `make skills` in dotfiles (`scripts/update-skills.sh`). It pulls forge-skills
+  main, drops the dead `implement-story` link from `~/.agents/skills`, and prunes the mirrors in
+  `~/.claude/skills` and `~/.codex/skills`. Smoke-tested 2026-09-28 before the merge.
 - Then do the manage-planning-repos decoupling recorded in deferred-work.md (board feature still
   names implement-story). Kept out of the PR to avoid conflicts with WP9's edits.
 - Codex-before-PR moved into `operate-bmad-loop` (Action 3 and phase-branch-workflow.md).
