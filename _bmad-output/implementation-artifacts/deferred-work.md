@@ -472,6 +472,13 @@ predates this ledger's first build.
   why: Open escalation — filling it changes what Setup asks and installs; never given a final owner decision.
   source: PR #8
 
+## PR #14 — operate-bmad-loop heartbeat session binding
+
+- what: The heartbeat captures the run session's active pane (`capture-pane -t "=<session>:"`), not the agent's task pane. If the user splits the task window (log tail, dashboard), that pane becomes active, the stall hash tracks its changing output, and a prompt blocking the agent's original pane is never alerted. Fix: resolve the task pane once and capture by its stable pane id (`%N`), refreshing when the engine replaces the task window; add a fixture with a blocked task pane beside a changing active pane.
+  where: `skills/operate-bmad-loop/assets/heartbeat.sh:83` (`pane_tail`), `tests/test_ol_scripts.sh` section K
+  why: Pre-existing limitation surfaced by the local Codex adversarial re-review of PR #14 (2026-09-27); exact session binding does not resolve it and it needs a pane-identity design change, so it was kept out of the bug-fix PR.
+  source: PR #14 (Codex adversarial review, local, 2026-09-27)
+
 ## GNU/Linux portability cluster
 
 codex's own review environment runs GNU coreutils; the repo's stated target

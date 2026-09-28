@@ -1,0 +1,6 @@
+{
+  "hooks": {
+    "preCommand": "rtk proxy"
+  },
+  "allowNetwork": true
+}

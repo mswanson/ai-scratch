@@ -11,3 +11,9 @@ docs/claude_setup/
 _bmad/render/
 .claude/settings.local.json
 .codex/tmp/
+
+# Codex runtime state (auth tokens, history, caches) — only config is tracked
+!.codex/
+.codex/*
+!.codex/settings.json
+!.codex/hooks.json
