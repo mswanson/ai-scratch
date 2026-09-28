@@ -243,3 +243,16 @@ collections). Only `corex-webapp` had an AGENTS.md as of 2026-09-20.
   no 1Password pause.
 - `docs/linear-workspace-blueprint.md` trashed: superseded by rev 3.2 in the
   Orderly planning repo (`docs/linear-setup/`).
+- Story written: `_bmad-output/implementation-artifacts/spec-wp9-hub-registry.md`
+  (manage-planning-repos hub registry + `hubs.sh` fan-out; registry built by
+  the skill from repo markers, never from dotfiles; JSON at
+  `~/.config/planning-repos/registry.json`). Baseline forge-skills `c46e2d6`.
+  Dotfiles follow-up once it lands: dotbot-link the registry into the repo.
+- dotfiles tonight: `make skills` (update-skills.sh; Claude/Codex now see all
+  skills; 17 third-party upgraded; 8 upstream-deleted mattpocock skills
+  removed), `make node VERSION=x` (upgrade-node.sh + stable Alfred workflow
+  links), README fresh-machine path without gh, setup-skills clone slug fix.
+- forge-skills is on branch `operate-bmad-loop/base-branch` (off the
+  unmerged pin-v0.12.0 commit 5b81803) with uncommitted implement-story and
+  operate-bmad-loop edits from a parallel session; `make skills` will not
+  pull until that lands.
