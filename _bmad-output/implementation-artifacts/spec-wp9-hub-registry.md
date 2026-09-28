@@ -64,7 +64,13 @@ clean.
 
 **Ask First:** any template content change beyond the one marker line
 (that line is pre-approved); any change to verify_hub.sh's existing
-output lines; a default roots list other than `~/Code`.
+output lines. The scan roots are always asked, never assumed: on the first
+build (no registry yet) the skill asks where to look in ONE
+`AskUserQuestion` round, offering `~/Code` as the default answer; on
+rebuilds it shows the recorded `roots` and asks whether to keep them.
+`registry.py` itself takes `--root` and has no built-in default beyond
+the recorded roots, so the script cannot scan anywhere the user did not
+name.
 
 **Never:** read the owner's dotfiles, the qmd index, or any file outside
 the scanned roots and the registry path to decide what a hub is; run a
@@ -87,7 +93,8 @@ verify_hub.sh's checks in the registry code.
 | shared spoke | same real path in two hubs' tables | listed under both hubs; `spokes_index` maps path → hubs | N/A |
 | ignore list | existing registry has `ignore:["/path/x"]` | `/path/x` never registered even if it has a marker; list carried over untouched | N/A |
 | pinned entry | existing registry has `pinned:[{name,path}]` | included as a hub even without evidence, flagged `pinned:true`; carried over untouched | pinned path missing on disk → `present:false`, kept |
-| roots | `--root` repeatable; default `~/Code` | each root scanned to `--max-depth` (default 4); roots recorded in the file | root missing → exit 1 naming it |
+| roots, first build | no registry yet | skill asks where to look (one question, `~/Code` offered as the default); `--root` repeatable; each root scanned to `--max-depth` (default 4); roots recorded in the file | root missing → exit 1 naming it; no `--root` and no recorded roots → exit 64 with usage, never a silent default |
+| roots, rebuild | registry has `roots` | skill shows them and asks keep/change before running; `build` with no `--root` reuses the recorded roots | N/A |
 | rebuild | registry exists | full rewrite of `hubs`, `others`, `excluded`; `ignore`, `pinned`, `roots` preserved; `generated_at` updated | unreadable/malformed existing file → exit 1 untouched |
 | `hubs.sh list` | registry present | one row per hub: name, path, branch, dirty flag, BMAD version from `_bmad/_config/manifest.yaml`, bmad-loop pin if any; JSON with `--json` | registry absent → exit 3 `run registry build first` |
 | `hubs.sh verify` | N hubs, `claude` on PATH | N parallel `claude -p` runs (`--jobs`, default 4), each told to run manage-planning-repos Verify and print the report; summary: per hub FAIL/GAP/drift counts + exit; overall exit 1 if any FAIL or error | `claude` absent → exit 3; per-hub timeout (`--timeout`, default 600s) → `error` row |
@@ -113,7 +120,8 @@ remember.
   existing hub template comment moves below it; spoke template gets its
   equivalent). One line each; no other content change.
 - `skills/manage-planning-repos/scripts/registry.py` -- new, stdlib.
-  Subcommands: `build [--root ... --max-depth N --out F]`, `show [--json]`.
+  Subcommands: `build [--root ... --max-depth N --out F]` (no `--root`
+  reuses recorded roots; none recorded → exit 64), `show [--json]`.
   Reuses `detect_repo_type.sh` (subprocess) for the legacy-hub guess
   rather than re-deriving; parses the spoke table with the verify_hub.sh
   grammar (port the awk faithfully; add a fixture that feeds both the same
@@ -130,8 +138,8 @@ remember.
   bucket gains one line: marker present → `ok`, absent → `GAP`. No other
   output changes.
 - `skills/manage-planning-repos/SKILL.md` -- menu item 4; new
-  `## 4. Registry and fan-out` section (build, list, verify, run, `--apply`
-  rule, what the registry is not); Step 3 cites `stamp_marker.sh`; Verify
+  `## 4. Registry and fan-out` section (the roots question first, then
+  build, list, verify, run, `--apply` rule, what the registry is not); Step 3 cites `stamp_marker.sh`; Verify
   prose names the marker GAP; References list updated.
 - `skills/manage-planning-repos/tests/test_registry.sh` -- new, chained
   from `test_mpr_scripts.sh`. `claude` PATH shim records argv and cwd and
@@ -160,6 +168,9 @@ remember.
   and eval scenarios
 
 **Acceptance Criteria:**
+- Given no registry and no `--root`, when `registry.py build` runs, then it
+  exits 64 with usage and writes nothing; given a registry with recorded
+  `roots`, `build` without `--root` scans exactly those.
 - Given a temp root holding a marked hub, a legacy hub (spoke table, no
   marker), a worktree of the marked hub, and a bare `_bmad/` directory,
   when `registry.py build --root <tmp>` runs, then the JSON lists exactly
@@ -246,6 +257,10 @@ remember.
 
 ## Eval scenarios (append to tests/README.md)
 
+19b. **Roots are asked, not assumed.** Seed: first Registry run, no
+    registry file. Expected: the skill asks where to look before scanning,
+    offering `~/Code`; it never runs `build` with an unasked default. On a
+    rebuild it shows the recorded roots and asks keep/change.
 20. **Registry build on a mixed root.** Seed: marked hub, legacy hub,
     worktree, bare `_bmad/`. Expected: two hubs, two exclusions with
     reasons, legacy flagged `marker:false`.
@@ -272,6 +287,7 @@ remember.
 
 ## Spec Change Log
 
+- 2026-09-28: owner review: scan roots are asked on every Registry run (`~/Code` is the offered default, not an assumed one); `registry.py` gets no built-in default. Fan-out scope confirmed as manage-planning-repos Verify only.
 - 2026-09-27: created from the owner's decision in session (registry built by the skill, never from dotfiles; marker approved; PRs #13 and #14 merged as prerequisites).
 
 ## Dev Agent Record
