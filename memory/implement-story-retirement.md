@@ -5,7 +5,7 @@ metadata:
   type: project
 ---
 
-The `implement-story` skill (forge-skills) was retired on 2026-09-28 on branch `retire/implement-story`
+The `implement-story` skill (forge-skills) was retired on 2026-09-28 on branch `retire/implement-story` (PR forge512/agent-skills #17)
 (worktree `~/Code/forge-skills-wt/retire-implement-story`). The bmad-loop tool at v0.12.0 plus
 `operate-bmad-loop` cover its scope: phase branch, one commit per story, review convergence,
 `awaiting-operator` for human-only follow-ups, the phase PR as the human-review gate. Its ship and
