@@ -518,3 +518,10 @@ item (branch on `stat`/`mktemp` dialect, or declare GNU coreutils a
 dependency) or explicitly accept BSD-only and expect codex to keep
 re-reporting these same four findings on every future review wave, since its
 own environment stays GNU/Linux regardless of what the repo targets.
+
+## Deferred from: code review of spec-wp9-hub-registry (2026-09-28)
+
+- Spoke-table header row not named `Symlink` is parsed as a spoke by both `verify_hub.sh`'s awk and `registry.py`'s port (`registry.py:137`); pre-existing grammar, fix both parsers together so they stay byte-for-byte equivalent.
+- Duplicate hub basenames (e.g. `~/Code/app` and `~/Work/app`) are indistinguishable in `hubs.sh`'s text summary (`hubs.sh:534`); `--json` carries the path. Cosmetic.
+- Hand edits to `registry.json` made during a long `registry.py build` are overwritten at the end (`registry.py:375,465`); no lock or mtime check. Rare.
+- `tests/test_registry.sh`: the AC2 grammar cross-check runs on a dedicated fixture, not the legacy hub's own table (lines 296-350), and the AC3 "byte-identical" check compares JSON values, not raw bytes (206-222). Test strengthening only; both parsers share one code path.

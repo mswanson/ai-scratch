@@ -13,6 +13,7 @@
 - Hub/spoke CLAUDE.md templates live in the manage-planning-repos skill assets (forge-skills repo); the old `docs/templates/` copy is archived at `_archive/templates/`
 - [Cloudflare token rolling](cloudflare-token-rolling.md) — same token ID recurring = user rolled the secret; don't nag to delete/recreate
 - [Cloudflare migration state](handoffs/2026-08-02-cloudflare-migration.md) — 15 domains migrated; forge512.com, registrar transfer, S3→R2 paused; brief at `_bmad-output/planning-artifacts/cloudflare-migration-brief.md`
+- [forge-skills spoke](forge-skills-spoke.md) — repo facts, AI review infrastructure (claude[bot] + Codex app), and code-review learnings (isolated read-only claude -p; reject relative config paths; one live smoke per story)
 - [CLI skill trees](cli-skill-trees.md) — .agent (singular) is Antigravity's dir, not an orphan
 - [qmd index and registry](qmd-index-registry.md) — collections tracked in dotfiles, sqlite disposable; missing paths are inert, so one registry covers every machine
 - [Claude Code settings scopes](claude-settings-scopes.md) — no user-scope settings.local.json; model/effortLevel churn the tracked settings.json by design

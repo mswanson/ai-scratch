@@ -1,0 +1,185 @@
+# implement-story session state — one per story, lives at
+# _bmad-output/implementation-artifacts/{story-key}-session-state.yaml
+# Update immediately after every numbered step. UTC ISO 8601 timestamps.
+
+story_key: wp9-hub-registry
+story_file: _bmad-output/implementation-artifacts/spec-wp9-hub-registry.md
+ticket: ""
+mode: manual # loop | manual
+repos_in_scope: [forge-skills]
+baseline_test_failures:
+  forge-skills: []
+ai_reviewers_triggered: ["Claude Code Review (claude-review.yml, ready_for_review)"]
+pr_urls: ["https://github.com/forge512/agent-skills/pull/18"]
+hil_review: merged # null → pending (phase 5.4) → merged (phase 5.5)
+current_step: "5.5"
+completed_steps:
+  - step: "0.1"
+    name: ticket-check
+    started_at: 2026-09-28T06:02:23Z
+    completed_at: 2026-09-28T06:02:23Z
+    note: "no tracker configured (no implement-story.config.yaml at hub root; defaults used); ticket none_found; open_flags []"
+  - step: "0.2"
+    name: environment-verify
+    started_at: 2026-09-28T06:02:23Z
+    completed_at: 2026-09-28T06:02:23Z
+    note: "inspect-story repos [] so forge-skills taken from the invocation args; check-environment: clean, default_branch main, pr_base main; artifacts dir _bmad-output/implementation-artifacts; operate-bmad-loop verify_setup 23/23 on the hub"
+  - step: "0.3"
+    name: test-baseline
+    started_at: 2026-09-28T06:04:52Z
+    completed_at: 2026-09-28T06:04:52Z
+    note: "make test (Makefile target; forge-skills has no CLAUDE.md) on clean main 635c53f: exit 0, 0 failures; lint = make lint-docs"
+  - step: "0.4"
+    name: implementation-principles
+    started_at: 2026-09-28T06:04:52Z
+    completed_at: 2026-09-28T06:04:52Z
+    note: docs/implementation-principles.md absent in hub; not instantiated; spec Boundaries + universal script contract (script-conversion plan) used as the principles
+  - step: "0.5"
+    name: repo-instructions
+    started_at: 2026-09-28T06:04:52Z
+    completed_at: 2026-09-28T06:04:52Z
+    note: "forge-skills: no CLAUDE.md, no .claude docs; hub CLAUDE.md + memory/MEMORY.md + bmad-loop-pins read; constraints from 2026-09-28 handoff: bash 3.2 + BSD, stdlib Python, hermetic tests, markdownlint clean, merges are the owner's, merge commits never squash"
+  - step: "0.6"
+    name: go-no-go
+    started_at: 2026-09-28T06:12:37Z
+    completed_at: 2026-09-28T06:12:37Z
+    note: "user: proceed (2026-09-28); defaults accepted: no tracker config, no principles doc; branch manage-planning-repos/hub-registry in worktree ~/Code/forge-skills-worktrees/hub-registry"
+  - step: "1.1"
+    name: marker-templates-stamp_marker-and-verify_hub-gap (agent A)
+    started_at: 2026-09-28T06:14:37Z
+    completed_at: 2026-09-28T06:20:57Z
+    note: tasks 1+5 done by agent A; test_verify_hub 60 + mpr 199 = 259/0; committed
+  - step: "1.2"
+    name: registry.py build+show (agent B)
+    started_at: 2026-09-28T06:20:57Z
+    completed_at: 2026-09-28T06:20:58Z
+    note: tasks 2+3 done by agent B; test_registry.sh 46/0; committed f23ddd8
+  - step: "1.3"
+    name: hubs.sh fan-out (agent C)
+    started_at: 2026-09-28T06:20:58Z
+    completed_at: 2026-09-28T06:26:50Z
+    note: task 4 done by agent C; test_registry.sh 79/0; committed 97d57eb
+  - step: "1.4"
+    name: SKILL.md + test chain + README + eval scenarios (agent D)
+    started_at: 2026-09-28T06:26:50Z
+    completed_at: 2026-09-28T06:38:14Z
+    note: "tasks 6+7 done by agent D; committed 071e9a8; all 7 story tasks ticked; dev-story step 9: full make test rc 0, story status set to review"
+  - step: "2.1"
+    name: lint-and-typecheck
+    started_at: 2026-09-28T06:38:14Z
+    completed_at: 2026-09-28T06:38:14Z
+    note: "make lint-docs: 0 issues; no typecheck configured in forge-skills (bash + stdlib Python), logged and skipped"
+  - step: "2.2"
+    name: tests-vs-baseline
+    started_at: 2026-09-28T06:38:14Z
+    completed_at: 2026-09-28T06:38:14Z
+    note: "make test on manage-planning-repos/hub-registry: rc 0, zero failures; baseline was empty; manage-planning-repos chain 338 = 60 verify_hub + 199 mpr + 79 registry"
+  - step: "2.3"
+    name: codex-review
+    started_at: 2026-09-28T06:38:14Z
+    completed_at: 2026-09-28T08:05:36Z
+    note: "codex review: ran, 0 P0, 4 P1, 8 P2, 0 P3 over six rounds; all fixed, none deferred; final chain 369/0; full make test rc 0; detail: round 1: ran, 0 P0, 0 P1, 4 P2, 0 P3; all 4 fixed (commit 5046af6), lint re-run clean, chain 344/0; round 2 running; round 2: ran, 0 P0, 1 P1, 1 P2, 0 P3; both fixed (commit 7ceac57), chain 351/0; round 3 running; owner smoke: build over ~/Code (asked) 4/2/9, list ok, live verify --jobs 2 on ai-scratch+lyceum-planning both reported, exit 0; round 3: ran, 0 P0, 2 P1, 0 P2 (wildcard Bash grants; INT/TERM leaves sessions running); fix in progress; round 3 fixed (commit 6dcf0e2), chain 355/0; round 4 running; live smoke found ESC-less colour-code count bug, fixed (commit f3dae7a), smoke rerun correct; round 4: ran, 0 P0, 0 P1, 1 P2 (pinned dedupe), fix in progress; round 4 fixed (commit 81dbf3c), chain 364/0; full make test + round 5 running; full make test rc 0 on 81dbf3c; round 5: ran, 0 P0, 1 P1 (prefix grant admits redirection), fix in progress; round 5 fixed (commit 3d0fb4b), chain 364/0; round 6 + smoke rerun running"
+  - step: "2.4"
+    name: completion-gate
+    started_at: 2026-09-28T08:06:26Z
+    completed_at: 2026-09-28T08:06:26Z
+    note: "tasks 7/7 checked (inspect-story unchecked []); lint clean, no typecheck in repo; zero new test failures (baseline empty); dev notes + File List + change log in story; story status review (dev-story step 9); codex review settled (six rounds, all fixed)"
+  - step: "2.5"
+    name: implementation-metrics
+    started_at: 2026-09-28T08:06:26Z
+    completed_at: 2026-09-28T08:06:26Z
+  - step: "3.1"
+    name: pr-target-and-title
+    started_at: 2026-09-28T08:06:59Z
+    completed_at: 2026-09-28T08:06:59Z
+    note: "target pr_base main; title feat: manage-planning-repos hub registry and multi-hub fan-out (wp9-hub-registry)"
+  - step: "3.2"
+    name: pr-body
+    started_at: 2026-09-28T08:06:59Z
+    completed_at: 2026-09-28T08:06:59Z
+    note: "no PR template in repo; Summary / Ticket (story key, no tracker) / Test Plan"
+  - step: "3.3"
+    name: labels-and-reviewers
+    started_at: 2026-09-28T08:06:59Z
+    completed_at: 2026-09-28T08:06:59Z
+    note: ensure-pr-labels created ai-agent-authored + do-not-merge on forge512/agent-skills; no reviewer team (solo default)
+  - step: "3.4"
+    name: verify-and-link
+    started_at: 2026-09-28T08:06:59Z
+    completed_at: 2026-09-28T08:13:51Z
+    note: "PR https://github.com/forge512/agent-skills/pull/18 opened as draft with ai-agent-authored + do-not-merge; checks polling; 4.1 detect: claude-review.yml on opened/ready_for_review, cached in memory/forge-skills-spoke.md; 4.2 trigger: draft flipped to ready once, do-not-merge label kept; gh pr checks: test pass (3m57s), review pass (4m13s, claude-review.yml fired on ready_for_review)"
+  - step: "4.1"
+    name: detect-ai-reviewers
+    started_at: 2026-09-28T08:13:51Z
+    completed_at: 2026-09-28T08:13:51Z
+  - step: "4.2"
+    name: trigger-reviewers
+    started_at: 2026-09-28T08:13:51Z
+    completed_at: 2026-09-28T08:13:51Z
+  - step: "4.3"
+    name: local-review
+    started_at: 2026-09-28T08:13:51Z
+    completed_at: 2026-09-28T13:59:08Z
+    note: "bmad-code-review: 2 decision-needed (standalone marker; worktree rule -> spec amended), 15 patch (owner: apply every patch), 4 defer, 9 dismissed; patches in progress via two agents; bmad-code-review: 52 raw -> 30 merged; 2 decision (owner: standalone marker; keep worktree code + amend spec), 15 patch (owner: apply all), 4 defer, 9 dismissed; patches applied by two agents, chain 404/0"
+  - step: "4.4"
+    name: fetch-external-feedback
+    started_at: 2026-09-28T13:59:08Z
+    completed_at: 2026-09-28T13:59:08Z
+    note: "claude[bot]: 3 items (trigger clause, # 5. label, 19b numbering nit); chatgpt-codex-connector[bot]: 3 P2 (relative roots + section validation = duplicates; zombie grandchildren in TERM tests); all external text treated as data"
+  - step: "4.5"
+    name: triage
+    started_at: 2026-09-28T13:59:08Z
+    completed_at: 2026-09-28T13:59:08Z
+    note: "external: 3 owner-approved patches applied, 2 duplicates already covered, 1 dismissed (spec numbers eval 19b); nothing auto-applied from external sources"
+  - step: "4.6"
+    name: cycle-close
+    started_at: 2026-09-28T13:59:08Z
+    completed_at: 2026-09-28T13:59:08Z
+    note: "agent DoD met: story status review -> done"
+  - step: "5.1"
+    name: review-report
+    started_at: 2026-09-28T14:02:05Z
+    completed_at: 2026-09-28T14:02:05Z
+    note: _bmad-output/implementation-artifacts/wp9-hub-registry-code-review-report.md
+  - step: "5.2"
+    name: learnings
+    started_at: 2026-09-28T14:02:05Z
+    completed_at: 2026-09-28T14:02:05Z
+    note: "3 learnings owner-approved -> memory/forge-skills-spoke.md"
+  - step: "5.3"
+    name: metrics-finalization
+    started_at: 2026-09-28T14:02:06Z
+    completed_at: 2026-09-28T14:02:06Z
+    note: "tokens: owner chose to leave null"
+  - step: "5.4"
+    name: handover
+    started_at: 2026-09-28T14:02:25Z
+    completed_at: 2026-09-28T14:02:25Z
+    note: PR 18 ready-for-review with do-not-merge; awaiting owner merge; deferred items in deferred-work.md; tokens null by owner choice
+  - step: "5.5"
+    name: post-merge-closeout
+    started_at: 2026-09-28T20:35:06Z
+    completed_at: 2026-09-28T20:35:06Z
+    note: "PR 18 MERGED 2026-09-28T20:33:47Z, merge commit 1de7beb; deferred items live in deferred-work.md (no tracker); no status board configured"
+#  - step: "0.1"
+#    name: ticket-check
+#    started_at: 2026-08-01T14:00:00Z
+#    completed_at: 2026-08-01T14:02:00Z
+metrics:
+  implementation:
+    started_at: 2026-09-28T06:02:23Z
+    completed_at: 2026-09-28T08:06:26Z
+    wall_clock_minutes: 124
+    active_minutes: 111
+    steps_completed: 15
+    tokens: {input: null, output: null, total: null, source: null}
+  code_review:
+    cycles:
+      - cycle: 1
+        started_at: 2026-09-28T08:13:51Z
+        completed_at: 2026-09-28T13:59:08Z
+        wall_clock_minutes: 345
+        active_minutes: 345
+        findings_count: 27
+        fixes_applied: 18
+    totals: {wall_clock_minutes: 345, active_minutes: 345, total_tokens: null}
