@@ -13,7 +13,7 @@ Symlinks in this repo point at code repos. Searches do not follow symlinks: alwa
 | Symlink | Real path | What it is |
 |---|---|---|
 | dotfiles | /Users/michaelswanson/Code/dotfiles | macOS dotfiles (dotbot-managed); canonical home of `~/.claude` global config via dotbot symlinks |
-| forge-skills | /Users/michaelswanson/Code/forge-skills | Personal skill library (verb-named user skills: implement-story, manage-planning-repos, …) |
+| forge-skills | /Users/michaelswanson/Code/forge-skills | Personal skill library (verb-named user skills: write-handoff, manage-planning-repos, …) |
 
 Each spoke's implementation rules live in its own `docs/project-context.md` (generated, versioned with the code); read it before writing code in that spoke.
 

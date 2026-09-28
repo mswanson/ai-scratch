@@ -7,6 +7,7 @@
 
 ## Key Artifacts
 - [Dotfiles update plan](../_bmad-output/planning-artifacts/2026-08-02-dotfiles-update-plan.md) — working punch-list for the dotfiles spoke; post-cleanup phase
+- [implement-story retirement](implement-story-retirement.md) — retired 2026-09-28; don't merge the PR before WP9 lands; mpr board decoupling is the follow-up
 - [bmad-loop version pins](bmad-loop-pins.md) — tool at tag v0.12.0 (2026-09-27); hub phase branch `bmad-loop-dev` named in policy but not present locally
 - [Framework design (authoritative)](../_bmad-output/planning-artifacts/2026-07-31-token-optimization-framework-design.md)
 - Hub/spoke CLAUDE.md templates live in the manage-planning-repos skill assets (forge-skills repo); the old `docs/templates/` copy is archived at `_archive/templates/`

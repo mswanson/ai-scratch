@@ -62,6 +62,17 @@ authoritative for the PR.
 
 ## PR #3 — implement-story
 
+**Closed 2026-09-28: the implement-story skill was retired** (forge-skills
+branch `retire/implement-story`; the bmad-loop tool + operate-bmad-loop cover
+its scope). Every entry below is moot with the code removed and is kept only
+as record. One follow-up replaces them:
+
+- what: Decouple manage-planning-repos from the retired implement-story skill: `run_board_state.sh` delegates to the removed `compute-board-state.py` (exits 3 "not installed; tabulate manually" by design), SKILL.md Setup step 6 / References and `set_board_url.sh` still name `implement-story.config.yaml` as the hub board config, `assets/hub-CLAUDE.md`, `assets/spoke-CLAUDE.md` and `tests/README.md` still describe the implement-story flow. Either prune the status-board feature (never configured in any hub) or relocate the board-data script here and rename the config file.
+  where: `skills/manage-planning-repos/` (SKILL.md, scripts/run_board_state.sh, scripts/set_board_url.sh, assets/hub-CLAUDE.md, assets/spoke-CLAUDE.md, tests/README.md)
+  why: Deliberately left out of the retirement PR because story WP9 (`manage-planning-repos/hub-registry`) is editing those same files; do this after WP9 merges.
+  source: implement-story retirement, 2026-09-28
+
+
 **PR #3 never received a "Merge-time closeout" comment** — its last comment is
 "Final round" (2026-08-19T04:25:13Z), whose "Follow-ups recorded (not in this
 PR)" paragraph is the closest equivalent and is the source for this section.
