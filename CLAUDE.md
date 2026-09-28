@@ -1,3 +1,4 @@
+<!-- planning-repo: hub -->
 # ai-scratch Planning Hub
 
 Sandbox and authoring hub for the BMAD tooling and the token-optimization framework; planning happens here, implementation lands in the spokes. This repo is the BMAD planning hub: it owns planning artifacts, stories, and cross-repo knowledge. Code lives in the spoke repos below.
