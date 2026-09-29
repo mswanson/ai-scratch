@@ -15,6 +15,10 @@ file ever written, WP9, manual mode).
 **Why:** the skill was ~300 KB of scripts and tests wrapping a process the loop replaced; 8 open
 follow-ups in deferred-work.md against code with one partial use.
 
+**Status 2026-09-28 (evening):** complete. WP9 merged as PR #18, the retirement as PR #17, and PR #20
+moved the status board into manage-planning-repos and dropped its last implement-story references.
+`make skills` in dotfiles ran clean afterwards: store at 38 skills, no implement-story link in any tree.
+
 **How to apply:**
 - Do not merge the retirement PR until story WP9 (`manage-planning-repos/hub-registry`) has merged:
   the WP9 session calls implement-story scripts through `~/.claude/skills/implement-story`, which

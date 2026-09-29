@@ -71,6 +71,7 @@ as record. One follow-up replaces them:
   where: `skills/manage-planning-repos/` (SKILL.md, scripts/run_board_state.sh, scripts/set_board_url.sh, assets/hub-CLAUDE.md, assets/spoke-CLAUDE.md, tests/README.md)
   why: Deliberately left out of the retirement PR because story WP9 (`manage-planning-repos/hub-registry`) is editing those same files; do this after WP9 merges.
   source: implement-story retirement, 2026-09-28
+  status: closed by forge-skills PR #20 (2026-09-29), which moved the status board into manage-planning-repos
 
 
 **PR #3 never received a "Merge-time closeout" comment** — its last comment is
