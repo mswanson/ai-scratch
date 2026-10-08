@@ -17,6 +17,7 @@
 - [CLI skill trees](cli-skill-trees.md) — .agent (singular) is Antigravity's dir, not an orphan
 - [qmd index and registry](qmd-index-registry.md) — collections tracked in dotfiles, sqlite disposable; missing paths are inert, so one registry covers every machine
 - [Claude Code settings scopes](claude-settings-scopes.md) — no user-scope settings.local.json; model/effortLevel churn the tracked settings.json by design
+- [dotbot link clobbers](dotbot-link-clobbers.md) — iTerm2 and `codegraph upgrade` replace `~/.claude` dotbot links with regular files; check with `[ -L ]` and re-link
 - [LiteLLM local adapter](handoffs/2026-08-08-litellm-local-adapter.md) — Claude Code ↔ local models, on-demand; built and verified, untested in real use
 - [Skill dedup and branch merge](handoffs/2026-08-08-skill-dedup-and-branch-merge.md) — `handoff` skill removed for `write-handoff`; never squash/rebase hub PRs (memory cites SHAs)
 - [BMAD 6.11 upgrade plan](handoffs/2026-08-21-bmad-6-11-upgrade-plan.md) — research done; Option B trial PASSED; skill work queued behind the forge-skills PR merges
