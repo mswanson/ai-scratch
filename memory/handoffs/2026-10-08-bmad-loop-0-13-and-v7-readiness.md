@@ -19,11 +19,11 @@ Read these first; do not re-derive what they settle.
 
 ## State
 
-Analysis done 2026-09-29; nothing upgraded yet.
+Analysis done 2026-09-29; nothing upgraded yet. Tracked in Linear as OPS-25 (Orderly workspace, Backlog), related to OPS-19.
 
 | Repo | Branch | Dirty | Last commit |
 |---|---|---|---|
-| ai-scratch | main | `memory/bmad-loop-pins.md` (6.10.0 correction), this handoff | `d4146d9` |
+| ai-scratch | main | clean | `1f2ffe5` (mswanson/ai-scratch#2: the `bmad-loop-pins.md` 6.10.0 correction plus this handoff) |
 | forge-skills | main | clean | `61bee4f` (PR #20 merge) |
 
 - Installed tool: bmad-loop `v0.12.0` (uv receipt `rev=v0.12.0`). Latest upstream: `v0.13.1` (2026-10-01).
@@ -45,7 +45,7 @@ Verdict reached: upgrade the tool to the v0.13.x line now; hold v7 on every bmad
 5. forge-skills PR: bump `pins.md` to `v0.13.1` with behavior notes covering the relay re-init, Codex hook trust, claude idle parking, `retrospective = "auto"`, `session_id_flag` pinning (a same-name `.bmad-loop/profiles/claude.toml` overlay stays unpinned until it adds `session_id_flag = "--session-id"`), and `SprintStatusWriteRefused`. Run `/codex:review` before opening it.
 6. ai-scratch `.bmad-loop/policy.toml`: the `retrospective` comment says "auto unsupported in v1"; that is stale as of v0.13.0. Auto retro needs `bmad-retrospective -H`, so only BMAD 6.11+ projects can use it.
 7. v7 trial: install the v7 preview in a throwaway repo with no bmad-loop. Record what breaks in manage-planning-repos (installer drift checks) and operate-bmad-loop Setup (module install via installer, step 3 bmm sync), plus the hub CLAUDE.md "BMAD Framework Files" section.
-8. Commit `memory/bmad-loop-pins.md` and this handoff.
+8. When steps 1 to 7 are done, close OPS-25 and flip this handoff to `status: resolved`.
 
 ## Constraints to honor
 
